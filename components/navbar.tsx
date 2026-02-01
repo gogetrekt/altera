@@ -6,6 +6,7 @@ import { ChevronDown, ExternalLink, Wallet, LogOut, LayoutDashboard, Sparkles } 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { useAccount, useDisconnect, useBalance } from 'wagmi'
+import { sepolia } from 'wagmi/chains'
 
 
 interface DropdownItem {
@@ -25,22 +26,21 @@ const ecosystemItems: DropdownItem[] = [
   { label: "Staking", href: "/staking" },
   { label: "Perpetual", href: "/perpetual" },
   { label: "Bridge", href: "/bridge" },
-  { label: "Faucet", href: "/faucet" },
 ]
 
 const resourcesItems: DropdownItem[] = [
-  { label: "Documentation", href: "https://docs.altera.io", external: true },
-  { label: "Whitepaper", href: "https://docs.altera.io/whitepaper", external: true },
-  { label: "Roadmap", href: "https://docs.altera.io/roadmap", external: true },
-  { label: "Protocol Overview", href: "https://docs.altera.io/overview", external: true },
-  { label: "FAQ", href: "https://docs.altera.io/faq", external: true },
+  { label: "Documentation", href: "https://altera-fi.gitbook.io/docs/documentation", external: true },
+  { label: "Whitepaper", href: "https://altera-fi.gitbook.io/docs/whitepaper", external: true },
+  { label: "Roadmap", href: "https://altera-fi.gitbook.io/docs/documentation/roadmap-and-faq/roadmap", external: true },
+  { label: "Protocol Overview", href: "https://altera-fi.gitbook.io/docs/documentation/protocol/swap", external: true },
+  { label: "FAQ", href: "https://altera-fi.gitbook.io/docs/documentation/roadmap-and-faq/faq", external: true },
 ]
 
 const communityItems: DropdownItem[] = [
-  { label: "Twitter / X", href: "https://twitter.com/altera", external: true },
-  { label: "Discord", href: "https://discord.gg/altera", external: true },
-  { label: "Telegram", href: "https://t.me/altera", external: true },
-  { label: "GitBook", href: "https://docs.altera.io", external: true },
+  { label: "Twitter / X", href: "https://x.com/Altera619661", external: true },
+  { label: "Discord", href: "https://discord.gg/TVz5EuyM4f", external: true },
+  { label: "Telegram", href: "https://t.me/altera_fi", external: true },
+  { label: "GitBook", href: "https://altera-fi.gitbook.io/docs", external: true },
   { label: "Contact Us", href: "/contact" },
 ]
 
@@ -115,23 +115,26 @@ function WalletButton() {
   const [isOpen, setIsOpen] = useState(false)
   let timeoutId: ReturnType<typeof setTimeout>
 
-  // Dummy ETH token balance
-  const { data: ethBal, isLoading: ethLoading } = useBalance({
+  // Token balances - use staleTime to prevent constant refetching
+  const { data: ethBal } = useBalance({
     address: address as `0x${string}` | undefined,
     token: "0x277cE9d3a6A7c43810FC57fD8254435273c4DAD9",
-    query: { refetchInterval: 10000 },
+    chainId: sepolia.id,
+    query: { staleTime: 30000, refetchInterval: 60000, enabled: !!address },
   })
 
-  const { data: usdcBal, isLoading: usdcLoading } = useBalance({
+  const { data: usdcBal } = useBalance({
     address: address as `0x${string}` | undefined,
     token: "0xecefA4372C0cb1D103527d6350d10E1556657292",
-    query: { refetchInterval: 10000 },
+    chainId: sepolia.id,
+    query: { staleTime: 30000, refetchInterval: 60000, enabled: !!address },
   })
 
-  const { data: coreBal, isLoading: coreLoading } = useBalance({
+  const { data: coreBal } = useBalance({
     address: address as `0x${string}` | undefined,
     token: "0x57eF4FB11A159791c5C935875f75b9970805DAFb",
-    query: { refetchInterval: 10000 },
+    chainId: sepolia.id,
+    query: { staleTime: 30000, refetchInterval: 60000, enabled: !!address },
   })
 
   const handleMouseEnter = () => {
@@ -191,21 +194,21 @@ function WalletButton() {
         <div className="min-w-[220px] rounded-lg border border-border bg-popover/95 backdrop-blur-xl p-3 shadow-xl">
           <div className="space-y-2 mb-3">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">ETH</span>
+              <span className="text-muted-foreground">dETH</span>
               <span className="text-foreground font-medium">
-                {ethLoading ? "..." : Number(ethBal?.formatted ?? 0).toFixed(4)}
+                {Number(ethBal?.formatted ?? 0).toFixed(4)}
               </span>
             </div>
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">USDC</span>
+              <span className="text-muted-foreground">dUSDC</span>
               <span className="text-foreground font-medium">
-                {usdcLoading ? "..." : Number(usdcBal?.formatted ?? 0).toFixed(2)}
+                {Number(usdcBal?.formatted ?? 0).toFixed(2)}
               </span>
             </div>
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">CORE</span>
               <span className="text-foreground font-medium">
-                {coreLoading ? "..." : Number(coreBal?.formatted ?? 0).toFixed(2)}
+                {Number(coreBal?.formatted ?? 0).toFixed(2)}
               </span>
             </div>
           </div>
@@ -254,8 +257,10 @@ export function Navbar() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-14 items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-lg">A</span>
+            <div className="h-8 w-8 flex items-center justify-center">
+              <svg viewBox="0 0 24 24" className="w-6 h-6" fill="currentColor">
+                <path d="M12 2L22 12L12 22L2 12L12 2Z" className="text-foreground" />
+              </svg>
             </div>
             <span className="text-xl font-semibold text-foreground">Altera</span>
           </Link>
@@ -269,6 +274,12 @@ export function Navbar() {
               className="px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
               Dashboard
+            </Link>
+            <Link
+              href="/faucet"
+              className="px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Faucet
             </Link>
           </nav>
 
@@ -321,6 +332,13 @@ export function Navbar() {
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Dashboard
+              </Link>
+              <Link
+                href="/faucet"
+                className="block px-3 py-2 text-sm font-medium text-foreground hover:bg-secondary rounded-md transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Faucet
               </Link>
               <Link
                 href="/genesis"

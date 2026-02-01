@@ -3,60 +3,139 @@
 import { useState, useEffect } from "react"
 import { Droplets, ExternalLink, Clock, Coins } from "lucide-react"
 import { toast } from "sonner"
+import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi"
+import { sepolia } from "viem/chains"
 import { PageLayout } from "@/components/page-layout"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
+import {
+  DETH_FAUCET_ADDRESS,
+  DUSDC_FAUCET_ADDRESS,
+  FAUCET_ABI,
+} from "@/lib/uniswap-config"
+
+const COOLDOWN_PERIOD = 24 * 60 * 60 // 24 hours in seconds
 
 interface TokenFaucet {
   symbol: string
   name: string
   amount: string
-  cooldown: number // seconds remaining
+  faucetAddress: string
 }
 
-export default function FaucetPage() {
-  const [tokens, setTokens] = useState<TokenFaucet[]>([
-    { symbol: "dETH", name: "Dummy ETH", amount: "0.5", cooldown: 0 },
-    { symbol: "dUSDC", name: "Dummy USDC", amount: "1,000", cooldown: 0 },
-  ])
-  const [isLoading, setIsLoading] = useState<string | null>(null)
+const FAUCETS: TokenFaucet[] = [
+  { symbol: "dETH", name: "Dummy ETH", amount: "0.5", faucetAddress: DETH_FAUCET_ADDRESS },
+  { symbol: "dUSDC", name: "Dummy USDC", amount: "100", faucetAddress: DUSDC_FAUCET_ADDRESS },
+]
 
-  // Cooldown timer
+export default function FaucetPage() {
+  const { address, isConnected } = useAccount()
+  const [claimingToken, setClaimingToken] = useState<string | null>(null)
+  const [now, setNow] = useState(Math.floor(Date.now() / 1000))
+  const [prevAddress, setPrevAddress] = useState<string | undefined>(undefined)
+  const [isAddressChanging, setIsAddressChanging] = useState(false)
+
+  // Update current time every second
   useEffect(() => {
     const interval = setInterval(() => {
-      setTokens((prev) =>
-        prev.map((token) => ({
-          ...token,
-          cooldown: Math.max(0, token.cooldown - 1),
-        }))
-      )
+      setNow(Math.floor(Date.now() / 1000))
     }, 1000)
     return () => clearInterval(interval)
   }, [])
 
-  const formatCooldown = (seconds: number) => {
-    const mins = Math.floor(seconds / 60)
-    const secs = seconds % 60
-    return `${mins}:${secs.toString().padStart(2, "0")}`
+  // dETH last claim
+  const { data: dethLastClaim, refetch: refetchDethLastClaim } = useReadContract({
+    address: DETH_FAUCET_ADDRESS as `0x${string}`,
+    abi: FAUCET_ABI,
+    functionName: 'lastClaim',
+    args: address ? [address] : undefined,
+    chainId: sepolia.id,
+    query: {
+      enabled: !!address,
+    },
+  })
+
+  // dUSDC last claim
+  const { data: dusdcLastClaim, refetch: refetchDusdcLastClaim } = useReadContract({
+    address: DUSDC_FAUCET_ADDRESS as `0x${string}`,
+    abi: FAUCET_ABI,
+    functionName: 'lastClaim',
+    args: address ? [address] : undefined,
+    chainId: sepolia.id,
+    query: {
+      enabled: !!address,
+    },
+  })
+
+  const { writeContract, data: txHash, isPending, reset } = useWriteContract()
+  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash: txHash })
+
+  // Refetch when address changes
+  useEffect(() => {
+    if (address && address !== prevAddress) {
+      setIsAddressChanging(true)
+      setPrevAddress(address)
+      // Small delay to ensure wagmi updates the query args
+      setTimeout(() => {
+        refetchDethLastClaim()
+        refetchDusdcLastClaim()
+        setIsAddressChanging(false)
+      }, 100)
+    }
+  }, [address, prevAddress, refetchDethLastClaim, refetchDusdcLastClaim])
+
+  // Handle success
+  useEffect(() => {
+    if (isSuccess) {
+      toast.dismiss("claim")
+      toast.success(`Claimed ${claimingToken} successfully!`)
+      refetchDethLastClaim()
+      refetchDusdcLastClaim()
+      reset()
+      setClaimingToken(null)
+    }
+  }, [isSuccess, claimingToken, reset, refetchDethLastClaim, refetchDusdcLastClaim])
+
+  const getCooldownRemaining = (symbol: string): number => {
+    // Don't show cooldown while address is changing
+    if (isAddressChanging) return 0
+    
+    const lastClaim = symbol === "dETH" ? dethLastClaim : dusdcLastClaim
+    if (lastClaim === undefined || lastClaim === null) return 0
+    const lastClaimTime = Number(lastClaim)
+    if (lastClaimTime === 0) return 0
+    const nextClaimTime = lastClaimTime + COOLDOWN_PERIOD
+    const remaining = nextClaimTime - now
+    return remaining > 0 ? remaining : 0
   }
 
-  const handleClaim = async (symbol: string) => {
-    setIsLoading(symbol)
-    toast.loading(`Claiming ${symbol}...`, { id: `claim-${symbol}` })
-    await new Promise((resolve) => setTimeout(resolve, 2000))
-    setTokens((prev) =>
-      prev.map((token) =>
-        token.symbol === symbol
-          ? { ...token, cooldown: 300 } // 5 minute cooldown
-          : token
-      )
-    )
-    setIsLoading(null)
-    const token = tokens.find((t) => t.symbol === symbol)
-    toast.success(`Claimed ${token?.amount} ${symbol}`, { id: `claim-${symbol}` })
+  const formatCooldown = (seconds: number) => {
+    const hours = Math.floor(seconds / 3600)
+    const mins = Math.floor((seconds % 3600) / 60)
+    const secs = seconds % 60
+    if (hours > 0) {
+      return `${hours}h ${mins}m ${secs}s`
+    }
+    return `${mins}m ${secs}s`
   }
+
+  const handleClaim = (faucet: TokenFaucet) => {
+    if (!address) return
+    
+    setClaimingToken(faucet.symbol)
+    writeContract({
+      address: faucet.faucetAddress as `0x${string}`,
+      abi: FAUCET_ABI,
+      functionName: 'claim',
+      chain: sepolia,
+      account: address,
+    })
+    toast.loading(`Claiming ${faucet.symbol}...`, { id: "claim" })
+  }
+
+  const isLoading = isPending || isConfirming
 
   return (
     <PageLayout minimalFooter>
@@ -92,11 +171,11 @@ export default function FaucetPage() {
                     asChild
                   >
                     <a
-                      href="https://sepoliafaucet.com"
+                      href="https://cloud.google.com/application/web3/faucet/ethereum/sepolia"
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      Sepolia Faucet
+                      Google Cloud Faucet
                       <ExternalLink className="h-4 w-4 ml-2" />
                     </a>
                   </Button>
@@ -126,44 +205,53 @@ export default function FaucetPage() {
                   Test Tokens
                 </CardTitle>
                 <CardDescription>
-                  Claim test tokens to use on Altera testnet
+                  Claim test tokens to use on Altera testnet (once per 24 hours)
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {tokens.map((token) => (
-                    <div
-                      key={token.symbol}
-                      className="rounded-lg bg-secondary/30 p-4 space-y-4"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h4 className="font-semibold">{token.symbol}</h4>
-                          <p className="text-sm text-muted-foreground">{token.name}</p>
-                        </div>
-                        <Badge variant="secondary">{token.amount} per claim</Badge>
-                      </div>
-                      {token.cooldown > 0 ? (
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <Clock className="h-4 w-4" />
-                            <span>Cooldown: {formatCooldown(token.cooldown)}</span>
+                  {FAUCETS.map((faucet) => {
+                    const cooldown = getCooldownRemaining(faucet.symbol)
+                    const isClaiming = claimingToken === faucet.symbol && isLoading
+                    
+                    return (
+                      <div
+                        key={faucet.symbol}
+                        className="rounded-lg bg-secondary/30 p-4 space-y-4"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h4 className="font-semibold">{faucet.symbol}</h4>
+                            <p className="text-sm text-muted-foreground">{faucet.name}</p>
                           </div>
-                          <Button disabled className="w-full">
-                            Claim {token.symbol}
-                          </Button>
+                          <Badge variant="secondary">{faucet.amount} per claim</Badge>
                         </div>
-                      ) : (
-                        <Button
-                          className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
-                          onClick={() => handleClaim(token.symbol)}
-                          disabled={isLoading === token.symbol}
-                        >
-                          {isLoading === token.symbol ? "Claiming..." : `Claim ${token.symbol}`}
-                        </Button>
-                      )}
-                    </div>
-                  ))}
+                        {!isConnected ? (
+                          <Button disabled className="w-full">
+                            Connect Wallet
+                          </Button>
+                        ) : cooldown > 0 ? (
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <Clock className="h-4 w-4" />
+                              <span>Cooldown: {formatCooldown(cooldown)}</span>
+                            </div>
+                            <Button disabled className="w-full">
+                              Claim {faucet.symbol}
+                            </Button>
+                          </div>
+                        ) : (
+                          <Button
+                            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+                            onClick={() => handleClaim(faucet)}
+                            disabled={isClaiming || isLoading}
+                          >
+                            {isClaiming ? "Claiming..." : `Claim ${faucet.symbol}`}
+                          </Button>
+                        )}
+                      </div>
+                    )
+                  })}
                 </div>
               </CardContent>
             </Card>
@@ -177,7 +265,7 @@ export default function FaucetPage() {
                   </div>
                   <div>
                     <p className="font-medium text-foreground mb-1">About Test Tokens</p>
-                    <p>dETH and dUSDC are ERC-20 tokens deployed on Sepolia for testing purposes. They have no real value and are only used to test Altera protocol features. You can claim tokens every 5 minutes.</p>
+                    <p>dETH and dUSDC are ERC-20 tokens deployed on Sepolia for testing purposes. They have no real value and are only used to test Altera protocol features. You can claim tokens once every 24 hours.</p>
                   </div>
                 </div>
               </CardContent>

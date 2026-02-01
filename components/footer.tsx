@@ -6,16 +6,17 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
 const resourcesLinks = [
-  { label: "Documentation", href: "https://docs.altera.io", external: true },
-  { label: "Whitepaper", href: "https://docs.altera.io/whitepaper", external: true },
-  { label: "Roadmap", href: "https://docs.altera.io/roadmap", external: true },
-  { label: "FAQ", href: "https://docs.altera.io/faq", external: true },
+  { label: "Documentation", href: "https://altera-fi.gitbook.io/docs/documentation", external: true },
+  { label: "Whitepaper", href: "https://altera-fi.gitbook.io/docs/whitepaper", external: true },
+  { label: "Roadmap", href: "https://altera-fi.gitbook.io/docs/documentation/roadmap-and-faq/roadmap", external: true },
+  { label: "Protocol Overview", href: "https://altera-fi.gitbook.io/docs/documentation/protocol/swap", external: true },
+  { label: "FAQ", href: "https://altera-fi.gitbook.io/docs/documentation/roadmap-and-faq/faq", external: true },
 ]
 
 const communityLinks = [
-  { label: "Twitter / X", href: "https://twitter.com/altera", external: true },
-  { label: "Discord", href: "https://discord.gg/altera", external: true },
-  { label: "Telegram", href: "https://t.me/altera", external: true },
+  { label: "Twitter / X", href: "https://x.com/Altera619661", external: true },
+  { label: "Discord", href: "https://discord.gg/TVz5EuyM4f", external: true },
+  { label: "Telegram", href: "https://t.me/altera_fi", external: true },
   { label: "Contact", href: "/contact", external: false },
 ]
 
@@ -28,13 +29,15 @@ export function Footer() {
             {/* Logo and Description */}
             <div className="lg:col-span-1">
               <Link href="/" className="flex items-center gap-2 mb-4">
-                <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-                  <span className="text-primary-foreground font-bold text-lg">A</span>
+                <div className="h-8 w-8 flex items-center justify-center">
+                  <svg viewBox="0 0 24 24" className="w-6 h-6" fill="currentColor">
+                    <path d="M12 2L22 12L12 22L2 12L12 2Z" className="text-foreground" />
+                  </svg>
                 </div>
                 <span className="text-xl font-semibold text-foreground">Altera</span>
               </Link>
               <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
-                The unified DeFi execution layer for swapping, staking, trading, and bridging assets.
+                Orchestrate your entire on-chain portfolio from a single operating system.
               </p>
             </div>
 

@@ -11,15 +11,12 @@ const _inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: 'Altera | Unified DeFi Execution Layer',
   description:
-    'Swap, stake, trade, and bridge assets in one unified interface. Altera is the next generation DeFi protocol.',
-  generator: 'v0.app',
+    'Orchestrate your entire on-chain portfolio from a single operating system. Altera is the unified DeFi execution layer.',
   icons: {
     icon: [
-      { url: '/icon-light-32x32.png', media: '(prefers-color-scheme: light)' },
-      { url: '/icon-dark-32x32.png', media: '(prefers-color-scheme: dark)' },
       { url: '/icon.svg', type: 'image/svg+xml' },
     ],
-    apple: '/apple-icon.png',
+    apple: '/apple-icon.svg',
   },
 }
 

@@ -1,11 +1,12 @@
 "use client"
 
 import { useState } from "react"
-import { ArrowDownUp, Clock, Fuel, ChevronDown } from "lucide-react"
+import { ArrowDownUp, Clock, Fuel, ChevronDown, Clock as ClockIcon } from "lucide-react"
 import { toast } from "sonner"
 import { PageLayout } from "@/components/page-layout"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
@@ -52,7 +53,16 @@ export default function BridgePage() {
 
   return (
     <PageLayout minimalFooter>
-      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] py-12 px-4">
+      <div className="flex flex-col items-center min-h-[calc(100vh-4rem)] py-12 px-4">
+        {/* Phase 2 Warning */}
+        <Alert className="max-w-md mb-6 border-primary/50 bg-primary/10">
+          <ClockIcon className="h-4 w-4" />
+          <AlertTitle>Phase 2 Feature</AlertTitle>
+          <AlertDescription>
+            Bridge is coming soon. This interface is a preview of the upcoming functionality.
+          </AlertDescription>
+        </Alert>
+
         <Card className="w-full max-w-md bg-card border-border">
           <CardHeader className="pb-4">
             <CardTitle className="text-xl">Bridge</CardTitle>

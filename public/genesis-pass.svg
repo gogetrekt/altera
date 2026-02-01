@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <defs>
+    <!-- Metallic border gradient -->
+    <linearGradient id="borderGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#71717a"/>
+      <stop offset="25%" stop-color="#a1a1aa"/>
+      <stop offset="50%" stop-color="#d4d4d8"/>
+      <stop offset="75%" stop-color="#a1a1aa"/>
+      <stop offset="100%" stop-color="#71717a"/>
+    </linearGradient>
+    
+    <!-- Dark background gradient -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#18181b"/>
+      <stop offset="50%" stop-color="#09090b"/>
+      <stop offset="100%" stop-color="#18181b"/>
+    </linearGradient>
+    
+    <!-- Diamond gradient - metallic silver -->
+    <linearGradient id="diamondGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f4f4f5"/>
+      <stop offset="25%" stop-color="#e4e4e7"/>
+      <stop offset="50%" stop-color="#a1a1aa"/>
+      <stop offset="75%" stop-color="#d4d4d8"/>
+      <stop offset="100%" stop-color="#71717a"/>
+    </linearGradient>
+    
+    <!-- Inner shadow for depth -->
+    <filter id="innerShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3" result="blur"/>
+      <feOffset in="blur" dx="2" dy="2" result="offsetBlur"/>
+      <feComposite in="SourceGraphic" in2="offsetBlur" operator="over"/>
+    </filter>
+    
+    <!-- Glow effect -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="8" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <!-- Subtle noise texture -->
+    <filter id="noise">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" result="noise"/>
+      <feColorMatrix type="saturate" values="0"/>
+      <feBlend in="SourceGraphic" in2="noise" mode="multiply" result="blend"/>
+      <feComposite in="blend" in2="SourceGraphic" operator="in"/>
+    </filter>
+  </defs>
+  
+  <!-- Outer metallic border -->
+  <rect x="8" y="8" width="384" height="384" rx="32" fill="url(#borderGrad)"/>
+  
+  <!-- Inner dark background -->
+  <rect x="14" y="14" width="372" height="372" rx="28" fill="url(#bgGrad)"/>
+  
+  <!-- Subtle inner border -->
+  <rect x="14" y="14" width="372" height="372" rx="28" fill="none" stroke="#27272a" stroke-width="1"/>
+  
+  <!-- Diamond shape - main -->
+  <g filter="url(#glow)">
+    <polygon points="200,60 300,170 200,280 100,170" fill="url(#diamondGrad)" filter="url(#innerShadow)"/>
+  </g>
+  
+  <!-- Diamond inner facet for 3D effect -->
+  <polygon points="200,80 280,170 200,260 120,170" fill="none" stroke="#52525b" stroke-width="1" opacity="0.5"/>
+  
+  <!-- Diamond highlight -->
+  <polygon points="200,70 240,130 200,100 160,130" fill="#ffffff" opacity="0.3"/>
+  
+  <!-- Horizontal divider line -->
+  <line x1="50" y1="310" x2="350" y2="310" stroke="#3f3f46" stroke-width="1"/>
+  
+  <!-- Text: GENESIS PASS -->
+  <text x="200" y="355" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="24" font-weight="500" letter-spacing="6" fill="#a1a1aa">GENESIS PASS</text>
+</svg>

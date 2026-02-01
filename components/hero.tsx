@@ -19,7 +19,7 @@ export function Hero() {
             Unified DeFi Execution Layer
           </h1>
           <p className="mt-6 text-lg sm:text-xl text-muted-foreground leading-relaxed text-balance">
-            Swap, stake, trade, and bridge assets in one unified interface.
+            Orchestrate your entire on-chain portfolio from a single operating system.
           </p>
         </div>
       </div>

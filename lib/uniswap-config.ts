@@ -342,6 +342,7 @@ export const FAUCET_ABI = [
     stateMutability: 'nonpayable',
   },
   {
+    // selector 0x5c16e15e - mapping of lastClaim timestamps
     name: 'lastClaim',
     type: 'function',
     inputs: [{ name: 'user', type: 'address' }],
@@ -349,18 +350,48 @@ export const FAUCET_ABI = [
     stateMutability: 'view',
   },
   {
-    name: 'claimAmount',
+    // selector 0x9c281430 - faucetAmount (NOT claimAmount)
+    name: 'faucetAmount',
     type: 'function',
     inputs: [],
     outputs: [{ type: 'uint256' }],
     stateMutability: 'view',
   },
   {
-    name: 'cooldownTime',
+    // selector for cooldown getter
+    name: 'cooldown',
     type: 'function',
     inputs: [],
     outputs: [{ type: 'uint256' }],
     stateMutability: 'view',
+  },
+  {
+    name: 'token',
+    type: 'function',
+    inputs: [],
+    outputs: [{ type: 'address' }],
+    stateMutability: 'view',
+  },
+  {
+    name: 'owner',
+    type: 'function',
+    inputs: [],
+    outputs: [{ type: 'address' }],
+    stateMutability: 'view',
+  },
+  {
+    name: 'setFaucetAmount',
+    type: 'function',
+    inputs: [{ name: 'amount', type: 'uint256' }],
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+  {
+    name: 'setCooldown',
+    type: 'function',
+    inputs: [{ name: 'newCooldown', type: 'uint256' }],
+    outputs: [],
+    stateMutability: 'nonpayable',
   },
 ] as const
 

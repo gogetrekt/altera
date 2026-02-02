@@ -26,8 +26,8 @@ interface TokenFaucet {
 }
 
 const FAUCETS: TokenFaucet[] = [
-  { symbol: "dETH", name: "Dummy ETH", amount: "0.5", faucetAddress: DETH_FAUCET_ADDRESS },
-  { symbol: "dUSDC", name: "Dummy USDC", amount: "100", faucetAddress: DUSDC_FAUCET_ADDRESS },
+  { symbol: "dETH", name: "Dummy ETH", amount: "0.05", faucetAddress: DETH_FAUCET_ADDRESS },
+  { symbol: "dUSDC", name: "Dummy USDC", amount: "10", faucetAddress: DUSDC_FAUCET_ADDRESS },
 ]
 
 export default function FaucetPage() {

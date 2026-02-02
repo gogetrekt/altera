@@ -69,8 +69,8 @@ export default function FaucetPage() {
     },
   })
 
-  const { writeContract, data: txHash, isPending, reset } = useWriteContract()
-  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash: txHash })
+  const { writeContract, data: txHash, isPending, reset, error: writeError } = useWriteContract()
+  const { isLoading: isConfirming, isSuccess, error: txError } = useWaitForTransactionReceipt({ hash: txHash })
 
   // Refetch when address changes
   useEffect(() => {
@@ -97,6 +97,23 @@ export default function FaucetPage() {
       setClaimingToken(null)
     }
   }, [isSuccess, claimingToken, reset, refetchDethLastClaim, refetchDusdcLastClaim])
+  // Handle errors
+  useEffect(() => {
+    if (writeError || txError) {
+      toast.dismiss("claim")
+      const errorMessage = writeError?.message || txError?.message || "Transaction failed"
+      // Check for user rejection
+      if (errorMessage.toLowerCase().includes("user rejected") || errorMessage.toLowerCase().includes("user denied")) {
+        toast.error("Transaction cancelled by user")
+      } else if (errorMessage.toLowerCase().includes("cooldown")) {
+        toast.error("Cooldown period not over yet")
+      } else {
+        toast.error(`Failed to claim: ${errorMessage.slice(0, 100)}`)
+      }
+      reset()
+      setClaimingToken(null)
+    }
+  }, [writeError, txError, reset])
 
   const getCooldownRemaining = (symbol: string): number => {
     // Don't show cooldown while address is changing
@@ -125,13 +142,32 @@ export default function FaucetPage() {
     if (!address) return
     
     setClaimingToken(faucet.symbol)
-    writeContract({
-      address: faucet.faucetAddress as `0x${string}`,
-      abi: FAUCET_ABI,
-      functionName: 'claim',
-      chain: sepolia,
-      account: address,
-    })
+    writeContract(
+      {
+        address: faucet.faucetAddress as `0x${string}`,
+        abi: FAUCET_ABI,
+        functionName: 'claim',
+        chain: sepolia,
+        account: address,
+      },
+      {
+        onError: (error) => {
+          toast.dismiss("claim")
+          const errorMessage = error?.message || "Transaction failed"
+          if (errorMessage.toLowerCase().includes("user rejected") || errorMessage.toLowerCase().includes("user denied")) {
+            toast.error("Transaction cancelled")
+          } else if (errorMessage.toLowerCase().includes("cooldown") || errorMessage.toLowerCase().includes("wait")) {
+            toast.error("Please wait for cooldown period")
+          } else if (errorMessage.toLowerCase().includes("insufficient")) {
+            toast.error("Faucet is empty or insufficient balance")
+          } else {
+            toast.error("Claim failed. Check console for details.")
+            console.error("Claim error:", error)
+          }
+          setClaimingToken(null)
+        },
+      }
+    )
     toast.loading(`Claiming ${faucet.symbol}...`, { id: "claim" })
   }
 

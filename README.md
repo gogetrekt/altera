@@ -16,7 +16,7 @@
   <a href="https://altera.io">Launch App</a> •
   <a href="https://altera-fi.gitbook.io/docs/">Documentation</a> •
   <a href="https://discord.gg/TVz5EuyM4f">Discord</a> •
-  <a href="https://x.com/Altera619661">Twitter</a> •
+  <a href="https://x.com/alteraafi">Twitter</a> •
   <a href="https://t.me/altera_fi">Telegram</a>
 </p>
 
@@ -530,7 +530,7 @@ Altera supports most Web3 wallets including:
 | 🌐 **Website** | [altera.io](https://altera.io) |
 | 📚 **Documentation** | [https://altera-fi.gitbook.io/docs/](https://altera-fi.gitbook.io/docs/) |
 | 💬 **Discord** | [discord.gg/TVz5EuyM4f](https://discord.gg/TVz5EuyM4f) |
-| 🐦 **Twitter / X** | [@Altera619661](https://x.com/Altera619661) |
+| 🐦 **Twitter / X** | [@alteraafi](https://x.com/alteraafi) |
 | 📱 **Telegram** | [t.me/altera_fi](https://t.me/altera_fi) |
 | 📧 **Support** | support@altera.io |
 
@@ -565,7 +565,7 @@ Altera supports most Web3 wallets including:
 Need help? We're here for you!
 
 - 💬 **Discord:** Fastest response time — [Join our server](https://discord.gg/TVz5EuyM4f)
-- 🐦 **Twitter / X:** DMs open — [@Altera619661](https://x.com/Altera619661)
+- 🐦 **Twitter / X:** DMs open — [@alteraafi](https://x.com/alteraafi)
 - 📱 **Telegram:** [Join our group](https://t.me/altera_fi)
 - 📧 **Email:** support@altera.io
 
@@ -610,6 +610,6 @@ Altera is provided **"as-is"** without any warranties of any kind, express or im
   <a href="https://altera.io">Website</a> •
   <a href="https://altera-fi.gitbook.io/docs/">Docs</a> •
   <a href="https://discord.gg/TVz5EuyM4f">Discord</a> •
-  <a href="https://x.com/Altera619661">Twitter</a> •
+  <a href="https://x.com/alteraafi">Twitter</a> •
   <a href="https://t.me/altera_fi">Telegram</a>
 </p>

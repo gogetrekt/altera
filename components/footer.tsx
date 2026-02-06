@@ -14,7 +14,7 @@ const resourcesLinks = [
 ]
 
 const communityLinks = [
-  { label: "Twitter / X", href: "https://x.com/Altera619661", external: true },
+  { label: "Twitter / X", href: "https://x.com/alteraafi", external: true },
   { label: "Discord", href: "https://discord.gg/TVz5EuyM4f", external: true },
   { label: "Telegram", href: "https://t.me/altera_fi", external: true },
   { label: "Contact", href: "/contact", external: false },

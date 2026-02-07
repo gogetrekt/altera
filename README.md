@@ -5,15 +5,15 @@
 <h1 align="center">Altera</h1>
 
 <p align="center">
-  <strong>The DeFi Operating System</strong>
+  <strong>Unified DeFi Execution Layer</strong>
 </p>
 
 <p align="center">
-  Orchestrate your entire on-chain portfolio from a single interface.
+  Orchestrate your entire on-chain portfolio from a single operating system.
 </p>
 
 <p align="center">
-  <a href="https://altera.io">Launch App</a> •
+  <a href="https://altera-defi.vercel.app">Launch App</a> •
   <a href="https://altera-fi.gitbook.io/docs/">Documentation</a> •
   <a href="https://discord.gg/TVz5EuyM4f">Discord</a> •
   <a href="https://x.com/alteraafi">Twitter</a> •

@@ -527,8 +527,8 @@ Altera supports most Web3 wallets including:
 
 | Resource | Link |
 |----------|------|
-| 🌐 **Website** | [altera.io](https://altera.io) |
-| 📚 **Documentation** | [https://altera-fi.gitbook.io/docs/](https://altera-fi.gitbook.io/docs/) |
+| 🌐 **Website** | [altera-defi.vercel.app](https://altera-defi.vercel.app/) |
+| 📚 **Documentation** | [altera-fi.gitbook.io/docs/](https://altera-fi.gitbook.io/docs/) |
 | 💬 **Discord** | [discord.gg/TVz5EuyM4f](https://discord.gg/TVz5EuyM4f) |
 | 🐦 **Twitter / X** | [@alteraafi](https://x.com/alteraafi) |
 | 📱 **Telegram** | [t.me/altera_fi](https://t.me/altera_fi) |
@@ -580,8 +580,8 @@ Need help? We're here for you!
 
 By using Altera, you agree to our:
 
-- 📜 [Terms of Service](https://altera.io/terms)
-- 🔒 [Privacy Policy](https://altera.io/privacy)
+- 📜 [Terms of Service](https://altera-defi.vercel.app/terms)
+- 🔒 [Privacy Policy](https://altera-defi.vercel.app/privacy)
 
 ---
 
@@ -607,7 +607,7 @@ Altera is provided **"as-is"** without any warranties of any kind, express or im
 </p>
 
 <p align="center">
-  <a href="https://altera.io">Website</a> •
+  <a href="https://altera-defi.vervel.app">Website</a> •
   <a href="https://altera-fi.gitbook.io/docs/">Docs</a> •
   <a href="https://discord.gg/TVz5EuyM4f">Discord</a> •
   <a href="https://x.com/alteraafi">Twitter</a> •

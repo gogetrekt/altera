@@ -1,12 +1,9 @@
 import React from 'react'
 import type { Metadata, Viewport } from 'next'
-import { Inter } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { Toaster } from '@/components/ui/sonner'
 import { Providers } from './providers'
 import './globals.css'
-
-const _inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'Altera | Unified DeFi Execution Layer',

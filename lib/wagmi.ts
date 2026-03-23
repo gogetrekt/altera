@@ -21,14 +21,18 @@ export const wagmiConfig = createConfig({
   chains: [sepolia, base],
   connectors: [
     injected(),
-    walletConnect({
-      projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID!,
-      showQrModal: true,
-    }),
+    ...(typeof window !== 'undefined' && process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID
+      ? [
+          walletConnect({
+            projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID,
+            showQrModal: true,
+          }),
+        ]
+      : []),
   ],
   transports: {
     [sepolia.id]: fallback(sepoliaRpcs.map(url => http(url))),
     [base.id]: fallback(baseRpcs.map(url => http(url))),
   },
-  ssr: true,
+  ssr: false,
 })

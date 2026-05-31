@@ -1,24 +1,38 @@
 import React from 'react'
 import type { Metadata, Viewport } from 'next'
+import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { Toaster } from '@/components/ui/sonner'
 import { Providers } from './providers'
 import './globals.css'
 
+const geistSans = Geist({
+  variable: '--font-geist-sans',
+  subsets: ['latin'],
+  display: 'swap',
+})
+
+const geistMono = Geist_Mono({
+  variable: '--font-geist-mono',
+  subsets: ['latin'],
+  display: 'swap',
+})
+
 export const metadata: Metadata = {
-  title: 'Altera | Unified DeFi Execution Layer',
+  title: {
+    default: 'Altera | DeFi Execution Console',
+    template: '%s | Altera',
+  },
   description:
-    'Orchestrate your entire on-chain portfolio from a single operating system. Altera is the unified DeFi execution layer.',
+    'A testnet DeFi interface for swapping, staking, and liquidity on Sepolia. Contracts are unaudited. Use at your own risk.',
   icons: {
-    icon: [
-      { url: '/icon.svg', type: 'image/svg+xml' },
-    ],
+    icon: [{ url: '/icon.svg', type: 'image/svg+xml' }],
     apple: '/apple-icon.svg',
   },
 }
 
 export const viewport: Viewport = {
-  themeColor: '#0d0d12',
+  themeColor: '#0d0f14',
 }
 
 export default function RootLayout({
@@ -27,7 +41,10 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className="dark">
+    <html
+      lang="en"
+      className={`dark ${geistSans.variable} ${geistMono.variable}`}
+    >
       <body className="font-sans antialiased bg-background text-foreground">
         <Providers>
           {children}

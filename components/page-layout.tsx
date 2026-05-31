@@ -9,10 +9,6 @@ interface PageLayoutProps {
   minimalFooter?: boolean
 }
 
-/**
- * Root page shell. Server Component -- Navbar is a Client Component subtree.
- * All wagmi providers are scoped inside app/providers.tsx.
- */
 export function PageLayout({
   children,
   showFooter = true,

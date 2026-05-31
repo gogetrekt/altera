@@ -4,114 +4,138 @@
 @custom-variant dark (&:is(.dark *));
 
 /* ============================================================
-   ALTERA — Precision Terminal Design System
-   STYLE: Swiss Minimalism 2.0 / Financial Data Console
-   DIALS: DESIGN_VARIANCE=5 | MOTION_INTENSITY=4 | VISUAL_DENSITY=7
+   ALTERA — Obsidian Lattice Design System
+   STYLE: Technical Precision / DeFi Execution Console
+   DIALS: DESIGN_VARIANCE=6 | MOTION_INTENSITY=4 | VISUAL_DENSITY=7
+   FONTS: IBM Plex Sans (UI) + IBM Plex Mono (data)
    ============================================================ */
 
 :root {
-  /* Surface scale */
-  --background:        oklch(0.085 0.008 240);   /* #0d0f14 near-black */
-  --foreground:        oklch(0.94 0.006 75);      /* #f0ede8 warm white */
-  --card:              oklch(0.11 0.008 240);     /* #131619 card surface */
-  --card-foreground:   oklch(0.94 0.006 75);
-  --popover:           oklch(0.10 0.008 240);     /* slightly deeper than card */
-  --popover-foreground: oklch(0.94 0.006 75);
+  /* ── Background system ── */
+  --background:         oklch(0.07 0.006 255);    /* deep navy-black */
+  --foreground:         oklch(0.92 0.004 248);    /* near-white, cool cast */
 
-  /* Primary — amber signal */
-  --primary:           oklch(0.78 0.16 78);       /* #e8b84b warm amber */
-  --primary-foreground: oklch(0.10 0.008 240);    /* dark on amber */
+  /* ── Surface depth scale ── */
+  --surface-1:          oklch(0.11 0.009 248);    /* panel surface */
+  --surface-2:          oklch(0.14 0.009 248);    /* elevated panel */
+  --surface-3:          oklch(0.18 0.008 248);    /* active / selected */
+  --surface-overlay:    oklch(0.11 0.009 248 / 0.85); /* popover / dropdown */
 
-  /* Secondary — dim surface */
-  --secondary:         oklch(0.15 0.006 240);     /* #1a1d22 */
-  --secondary-foreground: oklch(0.75 0.004 240);
+  /* ── Card (maps to surface-1 for shadcn compat) ── */
+  --card:               oklch(0.11 0.009 248);
+  --card-foreground:    oklch(0.92 0.004 248);
+  --popover:            oklch(0.14 0.009 248);
+  --popover-foreground: oklch(0.92 0.004 248);
 
-  /* Muted — subtler surface */
-  --muted:             oklch(0.14 0.006 240);
-  --muted-foreground:  oklch(0.50 0.004 240);     /* zinc-500 equivalent */
+  /* ── Primary — cobalt-cyan (interactive / action states only) ── */
+  --primary:            oklch(0.72 0.17 210);
+  --primary-foreground: oklch(0.07 0.006 255);    /* dark on cobalt */
 
-  /* Accent — same as primary for single-accent rule */
-  --accent:            oklch(0.78 0.16 78);
-  --accent-foreground: oklch(0.10 0.008 240);
+  /* ── Secondary — dim surface ── */
+  --secondary:          oklch(0.15 0.008 248);
+  --secondary-foreground: oklch(0.72 0.004 248);
 
-  /* Semantic */
-  --destructive:       oklch(0.56 0.20 25);       /* error red */
+  /* ── Muted ── */
+  --muted:              oklch(0.14 0.007 248);
+  --muted-foreground:   oklch(0.52 0.006 248);
+
+  /* ── Accent — same as primary for shadcn compat ── */
+  --accent:             oklch(0.72 0.17 210);
+  --accent-foreground:  oklch(0.07 0.006 255);
+
+  /* ── Semantic ── */
+  --destructive:        oklch(0.56 0.21 16);      /* error / danger */
   --destructive-foreground: oklch(0.98 0 0);
-  --success:           oklch(0.62 0.16 155);      /* semantic green */
-  --success-foreground: oklch(0.10 0 0);
-  --warning:           oklch(0.78 0.16 78);       /* amber = warning = primary */
+  --success:            oklch(0.70 0.18 155);      /* confirmed / live */
+  --success-foreground: oklch(0.07 0 0);
+
+  /* WARNING: amber is a risk signal only. Never a brand color. */
+  --warning:            oklch(0.80 0.16 78);       /* caution / real-ETH / unaudited */
   --warning-foreground: oklch(0.10 0.008 240);
 
-  /* Structure */
-  --border:            oklch(0.20 0.006 240);     /* #1e2128 hairline */
-  --input:             oklch(0.14 0.006 240);
-  --ring:              oklch(0.78 0.16 78);       /* focus ring = amber */
+  /* Simulation — violet, reserved for perpetual / sim-only features */
+  --simulation:         oklch(0.72 0.14 290);
+  --simulation-foreground: oklch(0.07 0 0);
 
-  /* Charts */
-  --chart-1:           oklch(0.78 0.16 78);       /* amber */
-  --chart-2:           oklch(0.62 0.16 155);      /* green */
-  --chart-3:           oklch(0.56 0.20 25);       /* red */
-  --chart-4:           oklch(0.65 0.10 240);      /* blue-muted */
-  --chart-5:           oklch(0.60 0.08 280);      /* purple-muted */
+  /* ── Structure ── */
+  --border:             oklch(0.22 0.006 248);
+  --border-subtle:      oklch(0.17 0.005 248);
+  --border-strong:      oklch(0.30 0.008 248);
+  --input:              oklch(0.14 0.007 248);
+  --ring:               oklch(0.72 0.17 210);      /* focus ring = cobalt */
 
-  /* Radius — terminal precision, slightly tighter */
-  --radius: 0.375rem;
+  /* ── Charts ── */
+  --chart-1:            oklch(0.72 0.17 210);      /* cobalt */
+  --chart-2:            oklch(0.70 0.18 155);      /* green */
+  --chart-3:            oklch(0.56 0.21 16);       /* red */
+  --chart-4:            oklch(0.80 0.16 78);       /* amber (warning use only) */
+  --chart-5:            oklch(0.72 0.14 290);      /* violet */
 
-  /* Sidebar (kept for shadcn compat) */
-  --sidebar:                oklch(0.10 0.008 240);
-  --sidebar-foreground:     oklch(0.94 0.006 75);
-  --sidebar-primary:        oklch(0.78 0.16 78);
-  --sidebar-primary-foreground: oklch(0.10 0.008 240);
-  --sidebar-accent:         oklch(0.15 0.006 240);
-  --sidebar-accent-foreground: oklch(0.94 0.006 75);
-  --sidebar-border:         oklch(0.20 0.006 240);
-  --sidebar-ring:           oklch(0.78 0.16 78);
+  /* ── Radius — precision, not ornamental ── */
+  --radius: 0.375rem;   /* 6px */
+
+  /* ── Sidebar (shadcn compat) ── */
+  --sidebar:                        oklch(0.11 0.009 248);
+  --sidebar-foreground:             oklch(0.92 0.004 248);
+  --sidebar-primary:                oklch(0.72 0.17 210);
+  --sidebar-primary-foreground:     oklch(0.07 0.006 255);
+  --sidebar-accent:                 oklch(0.15 0.008 248);
+  --sidebar-accent-foreground:      oklch(0.92 0.004 248);
+  --sidebar-border:                 oklch(0.22 0.006 248);
+  --sidebar-ring:                   oklch(0.72 0.17 210);
 }
 
 @theme inline {
-  /* Fonts — Precision Terminal pairing */
-  --font-sans:  var(--font-geist-sans), 'Geist', system-ui, sans-serif;
-  --font-mono:  var(--font-geist-mono), 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+  /* ── Fonts — IBM Plex pairing ── */
+  --font-sans: var(--font-ibm-plex-sans), 'IBM Plex Sans', system-ui, sans-serif;
+  --font-mono: var(--font-ibm-plex-mono), 'IBM Plex Mono', 'Courier New', ui-monospace, monospace;
 
-  /* Color tokens */
-  --color-background:              var(--background);
-  --color-foreground:              var(--foreground);
-  --color-card:                    var(--card);
-  --color-card-foreground:         var(--card-foreground);
-  --color-popover:                 var(--popover);
-  --color-popover-foreground:      var(--popover-foreground);
-  --color-primary:                 var(--primary);
-  --color-primary-foreground:      var(--primary-foreground);
-  --color-secondary:               var(--secondary);
-  --color-secondary-foreground:    var(--secondary-foreground);
-  --color-muted:                   var(--muted);
-  --color-muted-foreground:        var(--muted-foreground);
-  --color-accent:                  var(--accent);
-  --color-accent-foreground:       var(--accent-foreground);
-  --color-destructive:             var(--destructive);
-  --color-destructive-foreground:  var(--destructive-foreground);
-  --color-success:                 var(--success);
-  --color-success-foreground:      var(--success-foreground);
-  --color-warning:                 var(--warning);
-  --color-warning-foreground:      var(--warning-foreground);
-  --color-border:                  var(--border);
-  --color-input:                   var(--input);
-  --color-ring:                    var(--ring);
-  --color-chart-1:                 var(--chart-1);
-  --color-chart-2:                 var(--chart-2);
-  --color-chart-3:                 var(--chart-3);
-  --color-chart-4:                 var(--chart-4);
-  --color-chart-5:                 var(--chart-5);
-  --color-sidebar:                 var(--sidebar);
-  --color-sidebar-foreground:      var(--sidebar-foreground);
-  --color-sidebar-primary:         var(--sidebar-primary);
+  /* ── Color tokens ── */
+  --color-background:               var(--background);
+  --color-foreground:               var(--foreground);
+  --color-card:                     var(--card);
+  --color-card-foreground:          var(--card-foreground);
+  --color-popover:                  var(--popover);
+  --color-popover-foreground:       var(--popover-foreground);
+  --color-primary:                  var(--primary);
+  --color-primary-foreground:       var(--primary-foreground);
+  --color-secondary:                var(--secondary);
+  --color-secondary-foreground:     var(--secondary-foreground);
+  --color-muted:                    var(--muted);
+  --color-muted-foreground:         var(--muted-foreground);
+  --color-accent:                   var(--accent);
+  --color-accent-foreground:        var(--accent-foreground);
+  --color-destructive:              var(--destructive);
+  --color-destructive-foreground:   var(--destructive-foreground);
+  --color-success:                  var(--success);
+  --color-success-foreground:       var(--success-foreground);
+  --color-warning:                  var(--warning);
+  --color-warning-foreground:       var(--warning-foreground);
+  --color-simulation:               var(--simulation);
+  --color-simulation-foreground:    var(--simulation-foreground);
+  --color-border:                   var(--border);
+  --color-border-subtle:            var(--border-subtle);
+  --color-border-strong:            var(--border-strong);
+  --color-input:                    var(--input);
+  --color-ring:                     var(--ring);
+  --color-surface-1:                var(--surface-1);
+  --color-surface-2:                var(--surface-2);
+  --color-surface-3:                var(--surface-3);
+  --color-chart-1:                  var(--chart-1);
+  --color-chart-2:                  var(--chart-2);
+  --color-chart-3:                  var(--chart-3);
+  --color-chart-4:                  var(--chart-4);
+  --color-chart-5:                  var(--chart-5);
+  --color-sidebar:                  var(--sidebar);
+  --color-sidebar-foreground:       var(--sidebar-foreground);
+  --color-sidebar-primary:          var(--sidebar-primary);
   --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent:          var(--sidebar-accent);
+  --color-sidebar-accent:           var(--sidebar-accent);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border:          var(--sidebar-border);
-  --color-sidebar-ring:            var(--sidebar-ring);
+  --color-sidebar-border:           var(--sidebar-border);
+  --color-sidebar-ring:             var(--sidebar-ring);
 
-  /* Radius scale */
+  /* ── Radius scale ── */
   --radius-sm: calc(var(--radius) - 2px);
   --radius-md: var(--radius);
   --radius-lg: calc(var(--radius) + 2px);
@@ -123,27 +147,49 @@
     @apply border-border outline-ring/50;
   }
 
-  body {
-    @apply bg-background text-foreground font-sans antialiased;
+  html {
+    /* Dot grid: precision lattice substrate at 3% opacity */
+    background-color: var(--background);
+    background-image: radial-gradient(
+      circle,
+      oklch(0.32 0.008 248 / 0.55) 1px,
+      transparent 1px
+    );
+    background-size: 24px 24px;
+    /* Subtle radial light source: top-center */
+    background-attachment: fixed;
   }
 
-  /* Scrollbar — terminal precision */
+  body {
+    @apply text-foreground font-sans antialiased;
+    /* Body is transparent so html dot grid shows through */
+    background: transparent;
+    /* Top-center ambient light impression */
+    background-image: radial-gradient(
+      ellipse 80% 40% at 50% -10%,
+      oklch(0.14 0.014 240 / 0.5),
+      transparent
+    );
+    background-attachment: fixed;
+  }
+
+  /* Scrollbar */
   ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 5px;
+    height: 5px;
   }
   ::-webkit-scrollbar-track {
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: oklch(0.25 0.006 240);
+    background: oklch(0.28 0.006 248);
     border-radius: 3px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: oklch(0.32 0.006 240);
+    background: oklch(0.36 0.008 248);
   }
 
-  /* Focus ring — amber, consistent */
+  /* Focus ring — cobalt */
   :focus-visible {
     outline: 2px solid var(--ring);
     outline-offset: 2px;
@@ -151,60 +197,52 @@
 
   /* Selection */
   ::selection {
-    background: oklch(0.78 0.16 78 / 0.25);
+    background: oklch(0.72 0.17 210 / 0.22);
     color: var(--foreground);
   }
 }
 
 @layer utilities {
-  /* Data typography — all on-chain numbers must use font-mono */
+  /* ── Data typography — all on-chain numbers ── */
   .font-data {
     font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.02em;
   }
 
-  /* Hairline divider */
-  .divide-hairline {
-    border-color: var(--border);
-    border-width: 1px;
+  /* ── Surface elevation utilities ── */
+  .surface-1 { background: var(--surface-1); }
+  .surface-2 { background: var(--surface-2); }
+  .surface-3 { background: var(--surface-3); }
+
+  /* ── Semantic border-left accents (for risk/status banners) ── */
+  .border-l-accent   { border-left-color: var(--accent); }
+  .border-l-warning  { border-left-color: var(--warning); }
+  .border-l-danger   { border-left-color: var(--destructive); }
+  .border-l-success  { border-left-color: var(--success); }
+  .border-l-sim      { border-left-color: var(--simulation); }
+
+  /* ── Cobalt glow — focus and primary CTA only, never decorative ── */
+  .glow-cobalt {
+    box-shadow:
+      0 0 0 1px oklch(0.72 0.17 210 / 0.25),
+      0 4px 20px -4px oklch(0.72 0.17 210 / 0.18);
   }
 
-  /* Reduced motion guard */
-  @media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
-    }
-  }
+  /* ── Status color utilities ── */
+  .text-success    { color: var(--success); }
+  .text-warning    { color: var(--warning); }
+  .text-simulation { color: var(--simulation); }
+  .bg-success      { background-color: var(--success); }
+  .bg-warning      { background-color: var(--warning); }
 
-  /* Amber glow — only for primary CTA, never decorative */
-  .glow-amber {
-    box-shadow: 0 0 0 1px oklch(0.78 0.16 78 / 0.3),
-                0 4px 16px -4px oklch(0.78 0.16 78 / 0.15);
-  }
-
-  /* Surface elevation scale */
-  .surface-1 { background: var(--background); }
-  .surface-2 { background: var(--card); }
-  .surface-3 { background: var(--secondary); }
-
-  /* Status color utilities */
-  .text-success { color: var(--success); }
-  .text-warning  { color: var(--warning); }
-  .bg-success    { background-color: var(--success); }
-  .bg-warning    { background-color: var(--warning); }
-
-  /* Shimmer skeleton animation */
+  /* ── Skeleton shimmer ── */
   .skeleton-shimmer {
     background: linear-gradient(
       90deg,
-      oklch(0.14 0.006 240) 25%,
-      oklch(0.18 0.006 240) 50%,
-      oklch(0.14 0.006 240) 75%
+      oklch(0.14 0.007 248) 25%,
+      oklch(0.19 0.008 248) 50%,
+      oklch(0.14 0.007 248) 75%
     );
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite;
@@ -215,18 +253,51 @@
     100% { background-position: -200% 0; }
   }
 
-  /* Pulse breathing animation for live status dots */
+  /* ── Live status dot ── */
   .pulse-live {
     animation: pulse-live 2s ease-in-out infinite;
   }
 
   @keyframes pulse-live {
     0%, 100% { opacity: 1; }
-    50%       { opacity: 0.4; }
+    50%       { opacity: 0.35; }
   }
 
-  /* Tactile button press */
+  /* ── Page entrance animations ── */
+  .animate-fade-up {
+    animation: fade-up 0.22s ease-out both;
+  }
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Stagger delays for children */
+  .stagger-1 { animation-delay: 60ms; }
+  .stagger-2 { animation-delay: 120ms; }
+  .stagger-3 { animation-delay: 180ms; }
+  .stagger-4 { animation-delay: 240ms; }
+
+  /* ── Tactile button press ── */
   .active\:press:active {
-    transform: translateY(1px) scale(0.99);
+    transform: translateY(1px) scale(0.98);
+  }
+
+  /* ── Reduced motion guard ── */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }

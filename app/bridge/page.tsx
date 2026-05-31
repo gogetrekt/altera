@@ -1,8 +1,7 @@
 "use client"
 
+import { ArrowDownUp, Clock, ChevronDown, Clock as ClockIcon } from "lucide-react"
 import { useState } from "react"
-import { ArrowDownUp, Clock, Fuel, ChevronDown, Clock as ClockIcon } from "lucide-react"
-import { toast } from "sonner"
 import { PageLayout } from "@/components/page-layout"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -27,29 +26,12 @@ export default function BridgePage() {
   const [fromNetwork, setFromNetwork] = useState(networks[0])
   const [toNetwork, setToNetwork] = useState(networks[1])
   const [amount, setAmount] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-
-  const balance = "1.2345"
-  const estimatedTime = "~5 minutes"
-  const estimatedFee = "0.001 ETH"
 
   const switchNetworks = () => {
     const temp = fromNetwork
     setFromNetwork(toNetwork)
     setToNetwork(temp)
   }
-
-  const handleBridge = async () => {
-    if (!amount || Number.parseFloat(amount) <= 0) return
-    setIsLoading(true)
-    toast.loading("Initiating bridge...", { id: "bridge" })
-    await new Promise((resolve) => setTimeout(resolve, 2000))
-    setIsLoading(false)
-    toast.success(`Bridge initiated: ${amount} ETH from ${fromNetwork.name} to ${toNetwork.name}`, { id: "bridge" })
-    setAmount("")
-  }
-
-  const isValidAmount = amount && Number.parseFloat(amount) > 0
 
   return (
     <PageLayout minimalFooter>
@@ -59,7 +41,7 @@ export default function BridgePage() {
           <ClockIcon className="h-4 w-4" />
           <AlertTitle>Phase 2 Feature</AlertTitle>
           <AlertDescription>
-            Bridge is coming soon. This interface is a preview of the upcoming functionality.
+            Bridge is coming soon. This interface is a preview of the upcoming functionality. No bridging is available at this time.
           </AlertDescription>
         </Alert>
 
@@ -73,7 +55,7 @@ export default function BridgePage() {
               <Label>From Network</Label>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="w-full justify-between bg-transparent">
+                  <Button variant="outline" className="w-full justify-between bg-transparent" disabled>
                     <div className="flex items-center gap-2">
                       <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center text-xs font-semibold text-primary">
                         {fromNetwork.icon}
@@ -104,7 +86,7 @@ export default function BridgePage() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label>Amount (ETH)</Label>
-                <span className="text-xs text-muted-foreground">Balance: {balance}</span>
+                <span className="text-xs text-muted-foreground">Balance: unavailable</span>
               </div>
               <div className="flex gap-2">
                 <Input
@@ -113,12 +95,9 @@ export default function BridgePage() {
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   className="flex-1"
+                  disabled
                 />
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => setAmount(balance)}
-                >
+                <Button variant="secondary" size="sm" disabled>
                   Max
                 </Button>
               </div>
@@ -131,6 +110,7 @@ export default function BridgePage() {
                 size="icon"
                 className="h-10 w-10 rounded-full border-border bg-background"
                 onClick={switchNetworks}
+                disabled
               >
                 <ArrowDownUp className="h-4 w-4" />
               </Button>
@@ -141,7 +121,7 @@ export default function BridgePage() {
               <Label>To Network</Label>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="w-full justify-between bg-transparent">
+                  <Button variant="outline" className="w-full justify-between bg-transparent" disabled>
                     <div className="flex items-center gap-2">
                       <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center text-xs font-semibold text-primary">
                         {toNetwork.icon}
@@ -168,33 +148,20 @@ export default function BridgePage() {
               </DropdownMenu>
             </div>
 
-            {/* Estimated Time & Fee */}
-            {isValidAmount && (
-              <div className="rounded-lg bg-secondary/30 p-4 space-y-3 text-sm">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <Clock className="h-4 w-4" />
-                    <span>Estimated Time</span>
-                  </div>
-                  <span className="font-medium">{estimatedTime}</span>
+            {/* Estimated details placeholder */}
+            <div className="rounded-lg bg-secondary/30 p-4 space-y-3 text-sm">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Clock className="h-4 w-4" />
+                  <span>Estimated Time</span>
                 </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <Fuel className="h-4 w-4" />
-                    <span>Bridge Fee</span>
-                  </div>
-                  <span className="font-medium">{estimatedFee}</span>
-                </div>
+                <span className="font-medium text-muted-foreground">Available in Phase 2</span>
               </div>
-            )}
+            </div>
 
-            {/* Bridge Button */}
-            <Button
-              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
-              onClick={handleBridge}
-              disabled={!isValidAmount || isLoading}
-            >
-              {isLoading ? "Bridging..." : "Bridge"}
+            {/* Coming Soon Button */}
+            <Button className="w-full" disabled>
+              Bridge (Coming Soon)
             </Button>
           </CardContent>
         </Card>

@@ -27,10 +27,18 @@ export default function PerpetualPage() {
       <div className="py-12 px-4">
         <div className="mx-auto max-w-7xl">
           {/* Phase 2 Banner */}
-          <Alert className="mb-6 border-primary/50 bg-primary/10">
+          <Alert className="mb-4 border-primary/50 bg-primary/10">
             <Clock className="h-4 w-4 text-primary" />
             <AlertDescription className="text-foreground">
               <span className="font-semibold">Phase 2 Feature</span> - Perpetual trading is coming soon. This interface is a preview of the upcoming functionality.
+            </AlertDescription>
+          </Alert>
+
+          {/* Simulation disclaimer */}
+          <Alert className="mb-6 border-yellow-500/50 bg-yellow-500/10">
+            <AlertTriangle className="h-4 w-4 text-yellow-500" />
+            <AlertDescription className="text-yellow-400">
+              <span className="font-semibold">Simulated trading only.</span> No real funds are involved. All positions, P&amp;L, and prices shown here are for demonstration purposes and do not represent real trades or financial activity.
             </AlertDescription>
           </Alert>
 

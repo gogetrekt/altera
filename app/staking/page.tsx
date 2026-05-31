@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { Coins, Gift, Lock, Unlock, CheckCircle2, Circle } from "lucide-react"
+import { Coins, Gift, Lock, Unlock, CheckCircle2, Circle, TriangleAlert } from "lucide-react"
 import { toast } from "sonner"
 import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt, useBalance, usePublicClient } from "wagmi"
 import { parseUnits, formatUnits } from "viem"
@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import {
   TOKEN_ADDRESSES,
   TOKEN_DECIMALS,
@@ -40,7 +41,8 @@ function formatAmount(value: bigint, decimals: number, maxDecimals = 6): string 
 }
 
 export default function StakingPage() {
-  const { address, isConnected } = useAccount()
+  const { address, isConnected, chain } = useAccount()
+  const isOnSepolia = !chain || chain.id === sepolia.id
   const publicClient = usePublicClient()
   const [activePool, setActivePool] = useState<PoolType>("dusdc")
   const [stakeAmount, setStakeAmount] = useState("")
@@ -107,22 +109,6 @@ export default function StakingPage() {
     args: [poolId],
     chainId: sepolia.id,
   })
-
-  // Debug: log contract read results
-  useEffect(() => {
-    console.log('Staking Contract Debug:', {
-      poolId: Number(poolId),
-      poolInfo,
-      poolInfoRaw: JSON.stringify(poolInfo, (k, v) => typeof v === 'bigint' ? v.toString() : v),
-      poolInfoError,
-      userInfo,
-      userInfoRaw: JSON.stringify(userInfo, (k, v) => typeof v === 'bigint' ? v.toString() : v),
-      userInfoError,
-      pendingReward: pendingReward?.toString(),
-      pendingRewardError,
-      parsedUserStaked: userInfo ? (userInfo as [bigint, bigint])[0]?.toString() : '0',
-    })
-  }, [poolId, poolInfo, poolInfoError, userInfo, userInfoError, pendingReward, pendingRewardError])
 
   // Get current price from pool for APY calculation
   const { data: slot0 } = useReadContract({
@@ -243,11 +229,8 @@ export default function StakingPage() {
   useEffect(() => {
     // Only simulate if user has staked something
     if (userStaked === 0n) {
-      console.log('Simulation skipped: userStaked is 0')
       return
     }
-
-    console.log('Starting reward simulation for userStaked:', formatUnits(userStaked, stakedTokenDecimals))
 
     // Base reward rate: 0.000001 CORE per second per 1 USD staked
     const interval = setInterval(() => {
@@ -391,6 +374,15 @@ export default function StakingPage() {
             <h1 className="text-3xl font-bold text-foreground">Staking</h1>
             <p className="text-muted-foreground mt-1">Stake tokens to earn CORE rewards</p>
           </div>
+
+          {isConnected && !isOnSepolia && (
+            <Alert className="mb-6 border-orange-500 bg-orange-500/10">
+              <TriangleAlert className="h-4 w-4 text-orange-500" />
+              <AlertDescription className="text-orange-400">
+                This page operates on <strong>Sepolia testnet</strong>. Your wallet is connected to a different network. Switch to Sepolia to stake tokens.
+              </AlertDescription>
+            </Alert>
+          )}
 
           {/* Pool Selector Tabs */}
           <Tabs value={activePool} onValueChange={(v) => setActivePool(v as PoolType)} className="space-y-6">

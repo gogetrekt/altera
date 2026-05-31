@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { ArrowDownUp, ChevronDown, Settings } from "lucide-react"
+import { ArrowDownUp, ChevronDown, Settings, TriangleAlert } from "lucide-react"
 import { toast } from "sonner"
 import { parseUnits, formatUnits } from "viem"
 import {
@@ -17,6 +17,7 @@ import { PageLayout } from "@/components/page-layout"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -48,7 +49,8 @@ const formatAmount = (value: string, maxDecimals: number = 6): string => {
 }
 
 export default function SwapPage() {
-  const { address } = useAccount()
+  const { address, chain, isConnected } = useAccount()
+  const isOnSepolia = !chain || chain.id === sepolia.id
   const [fromToken, setFromToken] = useState(tokens[0])
   const [toToken, setToToken] = useState(tokens[1])
   const [fromAmount, setFromAmount] = useState("")
@@ -232,7 +234,15 @@ export default function SwapPage() {
 
   return (
     <PageLayout minimalFooter>
-      <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] py-12 px-4">
+      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] py-12 px-4">
+        {isConnected && !isOnSepolia && (
+          <Alert className="w-full max-w-md mb-4 border-orange-500 bg-orange-500/10">
+            <TriangleAlert className="h-4 w-4 text-orange-500" />
+            <AlertDescription className="text-orange-400">
+              This page operates on <strong>Sepolia testnet</strong>. Your wallet is connected to a different network. Switch to Sepolia to swap tokens.
+            </AlertDescription>
+          </Alert>
+        )}
         <Card className="w-full max-w-md bg-card border-border">
           <CardHeader className="flex flex-row items-center justify-between pb-4">
             <CardTitle className="text-xl">Swap</CardTitle>

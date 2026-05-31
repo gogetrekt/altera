@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { Plus, Minus, Info, Wallet, X, Loader2 } from "lucide-react"
+import { Plus, Minus, Info, Wallet, X, Loader2, TriangleAlert } from "lucide-react"
 import { toast } from "sonner"
 import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt, useBalance, usePublicClient } from "wagmi"
 import { parseUnits, formatUnits } from "viem"
@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import {
   TOKEN_ADDRESSES,
   TOKEN_DECIMALS,
@@ -49,7 +50,8 @@ function formatAmount(value: bigint, decimals: number, maxDecimals = 6): string 
 }
 
 export default function LiquidityPage() {
-  const { address, isConnected } = useAccount()
+  const { address, isConnected, chain } = useAccount()
+  const isOnSepolia = !chain || chain.id === sepolia.id
   const publicClient = usePublicClient()
   const [dethAmount, setDethAmount] = useState("")
   const [dusdcAmount, setDusdcAmount] = useState("")
@@ -393,6 +395,15 @@ export default function LiquidityPage() {
             <h1 className="text-3xl font-bold text-foreground">Liquidity</h1>
             <p className="text-muted-foreground mt-1">Provide liquidity to the dETH/dUSDC pool to earn fees</p>
           </div>
+
+          {isConnected && !isOnSepolia && (
+            <Alert className="mb-6 border-orange-500 bg-orange-500/10">
+              <TriangleAlert className="h-4 w-4 text-orange-500" />
+              <AlertDescription className="text-orange-400">
+                This page operates on <strong>Sepolia testnet</strong>. Your wallet is connected to a different network. Switch to Sepolia to manage liquidity.
+              </AlertDescription>
+            </Alert>
+          )}
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Add Liquidity Card */}

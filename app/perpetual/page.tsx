@@ -45,8 +45,8 @@ function MarketStat({
           positive === undefined
             ? 'text-sm font-data font-medium text-foreground'
             : positive
-            ? 'text-sm font-data font-medium text-emerald-400'
-            : 'text-sm font-data font-medium text-red-400'
+            ? 'text-sm font-data font-medium text-success'
+            : 'text-sm font-data font-medium text-destructive'
         }
       >
         {value}
@@ -59,35 +59,35 @@ function MarketStat({
 
 function ChartPlaceholder() {
   return (
-    <div className="rounded-xl border border-border bg-card overflow-hidden">
+    <div className="rounded-lg border border-border bg-surface-1 overflow-hidden">
       <div className="flex items-center justify-between px-5 py-3 border-b border-border">
         <div className="flex items-center gap-2">
           <BarChart2 className="h-4 w-4 text-muted-foreground" strokeWidth={1.5} />
           <span className="text-sm font-medium text-foreground">Price Chart</span>
-          <span className="text-[11px] font-mono text-zinc-600 uppercase tracking-wide">(Demo)</span>
+          <span className="text-[11px] font-mono text-muted-foreground/40 uppercase tracking-wide">(Demo)</span>
         </div>
         <StatusBadge variant="phase-2" label="Phase 2" />
       </div>
       <div className="flex flex-col items-center justify-center gap-3 py-16 px-4">
         {/* Decorative fake chart bars */}
-        <div className="flex items-end gap-1 h-12 opacity-20" aria-hidden="true">
+        <div className="flex items-end gap-1 h-12 opacity-10" aria-hidden="true">
           {[40, 65, 30, 80, 55, 70, 45, 90, 60, 75, 50, 85, 35, 95, 62].map((h, i) => (
             <div
               key={i}
-              className="w-3 rounded-sm bg-zinc-500"
+              className="w-3 rounded-sm bg-primary"
               style={{ height: `${h}%` }}
             />
           ))}
         </div>
         <div className="text-center space-y-1">
-          <p className="text-sm font-medium text-zinc-400">
+          <p className="text-sm font-medium text-muted-foreground">
             TradingView chart integration
           </p>
-          <p className="text-xs text-zinc-600">Available when perpetual trading ships in Phase 2</p>
+          <p className="text-xs text-muted-foreground/50">Available when perpetual trading ships in Phase 2</p>
         </div>
-        <div className="flex items-center gap-1.5 rounded px-2.5 py-1 bg-zinc-800/60 border border-zinc-700/40">
-          <Clock className="h-3 w-3 text-zinc-500" strokeWidth={1.5} />
-          <span className="text-[11px] font-mono text-zinc-500">Phase 2</span>
+        <div className="flex items-center gap-1.5 rounded px-2.5 py-1 bg-surface-2 border border-border">
+          <Clock className="h-3 w-3 text-muted-foreground/50" strokeWidth={1.5} />
+          <span className="text-[11px] font-mono text-muted-foreground/50">Phase 2</span>
         </div>
       </div>
     </div>
@@ -98,7 +98,7 @@ function ChartPlaceholder() {
 
 function PositionsTable({ title }: { title: string }) {
   return (
-    <div className="rounded-xl border border-border bg-card overflow-hidden">
+    <div className="rounded-lg border border-border bg-surface-1 overflow-hidden">
       <div className="px-5 py-3 border-b border-border">
         <h3 className="text-sm font-medium text-foreground">{title}</h3>
       </div>
@@ -120,14 +120,14 @@ export default function PerpetualPage() {
       <div className="py-8 px-4 sm:px-6">
         <div className="mx-auto max-w-7xl space-y-4">
 
-          {/* ── Mandatory simulation disclaimer -- rendered server-side ── */}
+          {/* ── Mandatory simulation disclaimer -- rendered server-side, audit-required ── */}
           <SimulationBanner />
 
           {/* ── Phase 2 notice ── */}
-          <div className="flex items-start gap-3 rounded-md border border-zinc-700/50 bg-zinc-800/30 px-4 py-3">
-            <Clock className="h-4 w-4 shrink-0 mt-0.5 text-zinc-500" strokeWidth={1.5} />
-            <p className="text-sm text-zinc-400">
-              <strong className="text-zinc-300 font-medium">Phase 2 feature.</strong>{' '}
+          <div className="flex items-start gap-3 rounded-md border border-border border-l-4 border-l-border-strong bg-surface-2 px-4 py-3">
+            <Clock className="h-4 w-4 shrink-0 mt-0.5 text-muted-foreground" strokeWidth={1.5} />
+            <p className="text-sm text-muted-foreground">
+              <strong className="text-foreground font-medium">Phase 2 feature.</strong>{' '}
               Perpetual trading is not available in the current release.
               The interface below is a non-functional preview. No orders can be placed.
             </p>
@@ -140,20 +140,20 @@ export default function PerpetualPage() {
           </div>
 
           {/* ── Market strip ── */}
-          <div className="rounded-xl border border-border bg-card px-5 py-4">
+          <div className="rounded-lg border border-border bg-surface-1 px-5 py-4">
             <div className="flex flex-wrap items-center gap-x-8 gap-y-4">
               {/* Pair + price */}
               <div className="flex items-center gap-3 min-w-0">
-                <span className="font-mono text-sm font-medium text-zinc-400 tracking-wide">
+                <span className="font-mono text-sm font-medium text-muted-foreground tracking-wide">
                   {DEMO_MARKET.pair}
-                  <span className="ml-2 text-[11px] text-zinc-600">(Demo)</span>
+                  <span className="ml-2 text-[11px] text-muted-foreground/40">(Demo)</span>
                 </span>
                 <span className="font-data text-2xl font-semibold text-foreground">
                   ${DEMO_MARKET.price}
                 </span>
                 <span
                   className={`flex items-center gap-1 text-sm font-data font-medium ${
-                    DEMO_MARKET.changePositive ? 'text-emerald-400' : 'text-red-400'
+                    DEMO_MARKET.changePositive ? 'text-success' : 'text-destructive'
                   }`}
                 >
                   {DEMO_MARKET.changePositive
@@ -192,9 +192,9 @@ export default function PerpetualPage() {
             </div>
           </div>
 
-          {/* ── Disclaimer footer strip ── */}
-          <div className="rounded-md border border-yellow-500/20 bg-yellow-500/3 px-4 py-3">
-            <p className="text-xs text-yellow-600 leading-relaxed">
+          {/* ── Disclaimer footer strip -- simulation safety signal (violet) ── */}
+          <div className="rounded-md border border-simulation/20 border-l-4 border-l-simulation bg-simulation/5 px-4 py-3">
+            <p className="text-xs text-simulation/80 leading-relaxed">
               All prices, positions, P&amp;L, and market data shown on this page are for
               demonstration purposes only. They do not represent real market conditions,
               real trades, or any financial activity. No real funds are involved.

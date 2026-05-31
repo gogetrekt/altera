@@ -49,13 +49,13 @@ function TraitPill({
   sub: string
 }) {
   return (
-    <div className="flex items-start gap-3 rounded-md border border-border/60 bg-card/60 px-4 py-3">
-      <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded bg-amber-500/10 border border-amber-500/20">
-        <Icon className="h-4 w-4 text-amber-400" strokeWidth={1.5} />
+    <div className="flex items-start gap-3 rounded-md border border-border bg-surface-2 px-4 py-3">
+      <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded bg-surface-3 border border-border">
+        <Icon className="h-4 w-4 text-muted-foreground" strokeWidth={1.5} />
       </div>
       <div>
         <p className="text-sm font-medium text-foreground">{label}</p>
-        <p className="text-xs text-muted-foreground mt-0.5">{sub}</p>
+        <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{sub}</p>
       </div>
     </div>
   )
@@ -73,9 +73,9 @@ function SupplyBar({ minted, max }: { minted: number; max: number }) {
           {minted.toLocaleString()} / {max.toLocaleString()}
         </span>
       </div>
-      <div className="h-1.5 rounded-full bg-zinc-800 overflow-hidden">
+      <div className="h-1.5 rounded-full bg-surface-3 overflow-hidden">
         <div
-          className="h-full rounded-full bg-amber-500 transition-all duration-700"
+          className="h-full rounded-full bg-primary transition-all duration-700"
           style={{ width: `${pct}%` }}
           role="progressbar"
           aria-valuenow={minted}
@@ -108,7 +108,7 @@ function DetailRow({
       <span
         className={cn(
           'text-sm font-data font-medium',
-          highlight ? 'text-amber-400' : 'text-foreground',
+          highlight ? 'text-warning' : 'text-foreground',
         )}
       >
         {value}
@@ -336,7 +336,7 @@ export default function GenesisPassPage() {
       <div className="py-12 px-4 sm:px-6">
         <div className="mx-auto max-w-5xl">
 
-          {/* ── Mandatory mainnet warning ── */}
+          {/* ── Mandatory mainnet warning -- Server Component, audit-required ── */}
           <MainnetWarning
             detail={`You need at least ${GENESIS_NFT_CONFIG.totalPrice} ETH on Base Mainnet to mint. This is not a testnet transaction.`}
             className="mb-8"
@@ -346,10 +346,10 @@ export default function GenesisPassPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
 
             {/* ══ Left: NFT + description ══════════════════════════════════════ */}
-            <div className="space-y-6">
+            <div className="space-y-6 animate-fade-up">
 
               {/* NFT preview */}
-              <div className="relative aspect-square rounded-xl overflow-hidden border border-border/60 bg-zinc-900">
+              <div className="relative aspect-square rounded-lg overflow-hidden border border-border bg-surface-1">
                 <Image
                   src="/genesis-pass.png"
                   alt="Altera Genesis Pass NFT"
@@ -360,7 +360,7 @@ export default function GenesisPassPage() {
                 />
                 {/* Soulbound badge */}
                 <div className="absolute top-3 right-3">
-                  <span className="inline-flex items-center gap-1.5 rounded px-2.5 py-1 bg-zinc-900/90 border border-zinc-700/60 text-[11px] font-mono uppercase tracking-wide text-zinc-400 backdrop-blur-sm">
+                  <span className="inline-flex items-center gap-1.5 rounded px-2.5 py-1 bg-surface-1/90 border border-border text-[11px] font-mono uppercase tracking-wide text-muted-foreground backdrop-blur-sm">
                     <Lock className="h-3 w-3" strokeWidth={1.5} />
                     Soulbound
                   </span>
@@ -408,20 +408,20 @@ export default function GenesisPassPage() {
             </div>
 
             {/* ══ Right: Mint panel ═════════════════════════════════════════════ */}
-            <div className="lg:sticky lg:top-20 space-y-4">
+            <div className="lg:sticky lg:top-20 space-y-4 animate-fade-up stagger-2">
 
-              {/* Wrong network inline alert */}
+              {/* Wrong network inline alert -- amber = risk signal */}
               {isConnected && !isCorrectNetwork && (
-                <div className="flex items-start gap-3 rounded-md border border-amber-500/40 bg-amber-500/5 px-4 py-3">
-                  <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-amber-400" strokeWidth={1.5} />
-                  <p className="text-sm text-amber-400/90">
-                    Switch to <strong className="text-amber-400">Base Mainnet</strong> in your wallet to mint.
+                <div className="flex items-start gap-3 rounded-md border border-warning/25 border-l-4 border-l-warning bg-warning/5 px-4 py-3">
+                  <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-warning" strokeWidth={1.5} />
+                  <p className="text-sm text-warning/90">
+                    Switch to <strong className="text-warning">Base Mainnet</strong> in your wallet to mint.
                   </p>
                 </div>
               )}
 
               {/* Mint card */}
-              <div className="rounded-xl border border-border bg-card">
+              <div className="rounded-lg border border-border bg-surface-1">
 
                 {/* Card header */}
                 <div className="flex items-center justify-between px-5 py-4 border-b border-border">
@@ -467,10 +467,10 @@ export default function GenesisPassPage() {
                     <SupplyBar minted={minted} max={maxSupply} />
                   )}
 
-                  {/* Total */}
-                  <div className="flex items-center justify-between rounded-md border border-amber-500/20 bg-amber-500/5 px-4 py-3">
+                  {/* Total -- amber as risk signal (real ETH cost) */}
+                  <div className="flex items-center justify-between rounded-md border border-warning/20 border-l-4 border-l-warning bg-warning/5 px-4 py-3">
                     <span className="text-sm font-medium text-foreground">Total</span>
-                    <span className="font-data text-lg font-semibold text-amber-400">
+                    <span className="font-data text-lg font-semibold text-warning">
                       {GENESIS_NFT_CONFIG.totalPrice} ETH
                     </span>
                   </div>
@@ -484,10 +484,10 @@ export default function GenesisPassPage() {
                       'w-full h-11 rounded-md text-sm font-semibold',
                       'inline-flex items-center justify-center gap-2',
                       'transition-all duration-150 cursor-pointer',
-                      'focus-visible:outline-2 focus-visible:outline-amber-400 focus-visible:outline-offset-2',
+                      'focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2',
                       !isButtonDisabled
-                        ? 'bg-amber-500 hover:bg-amber-400 text-zinc-950 active:scale-[0.98]'
-                        : 'bg-zinc-800 text-zinc-500 cursor-not-allowed',
+                        ? 'bg-primary hover:bg-primary/90 text-primary-foreground active:scale-[0.98]'
+                        : 'bg-surface-3 text-muted-foreground/40 cursor-not-allowed',
                     )}
                     aria-label="Mint Genesis Pass"
                   >
@@ -523,12 +523,12 @@ export default function GenesisPassPage() {
                         </p>
                       )}
                       {isConnected && isCorrectNetwork && canMint && simulateError && !simulateData && (
-                        <p className="text-center text-xs text-red-400">
+                        <p className="text-center text-xs text-destructive">
                           Mint simulation failed. Transaction would revert on-chain.
                         </p>
                       )}
                       {isConnected && isCorrectNetwork && !alreadyMinted && !isSoldOut && !hasEnoughETH && !!ethBalance && (
-                        <p className="text-center text-xs text-amber-400/80">
+                        <p className="text-center text-xs text-warning/80">
                           You need {GENESIS_NFT_CONFIG.totalPrice} ETH on Base to mint.
                         </p>
                       )}
@@ -545,7 +545,7 @@ export default function GenesisPassPage() {
                   {mintPhase === 'minted' && (
                     <Link
                       href="/dashboard"
-                      className="flex items-center justify-center gap-1.5 text-xs text-amber-400 hover:text-amber-300 transition-colors cursor-pointer"
+                      className="flex items-center justify-center gap-1.5 text-xs text-primary hover:text-primary/80 transition-colors cursor-pointer"
                     >
                       View your Genesis badge in Dashboard
                       <ArrowRight className="h-3 w-3" strokeWidth={1.5} />

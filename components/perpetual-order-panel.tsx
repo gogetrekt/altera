@@ -16,13 +16,13 @@ export function PerpetualOrderPanel() {
   const DEMO_PRICE = '2,534.82'
 
   return (
-    <div className="rounded-xl border border-border bg-card overflow-hidden">
+    <div className="rounded-lg border border-border bg-surface-1 overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-border">
         <h2 className="text-sm font-medium text-foreground">Place Order</h2>
-        <div className="flex items-center gap-1.5 rounded px-2 py-1 bg-zinc-800/60 border border-zinc-700/40">
-          <Clock className="h-3 w-3 text-zinc-500" strokeWidth={1.5} />
-          <span className="text-[11px] font-mono text-zinc-500 uppercase tracking-wide">
+        <div className="flex items-center gap-1.5 rounded px-2 py-1 bg-surface-2 border border-border">
+          <Clock className="h-3 w-3 text-muted-foreground/50" strokeWidth={1.5} />
+          <span className="text-[11px] font-mono text-muted-foreground/50 uppercase tracking-wide">
             Phase 2
           </span>
         </div>
@@ -32,7 +32,7 @@ export function PerpetualOrderPanel() {
       <div className="px-5 py-5 space-y-5">
         {/* Long / Short selector */}
         <div
-          className="grid grid-cols-2 gap-1.5 rounded-md bg-zinc-900/60 border border-border p-1"
+          className="grid grid-cols-2 gap-1.5 rounded-md bg-surface-2 border border-border p-1"
           aria-label="Order side (disabled)"
         >
           {(['long', 'short'] as const).map(s => (
@@ -46,9 +46,9 @@ export function PerpetualOrderPanel() {
                 'flex items-center justify-center gap-2 rounded py-2 text-sm font-medium',
                 'transition-colors duration-150 cursor-not-allowed',
                 side === s && s === 'long'
-                  ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/25'
+                  ? 'bg-success/10 text-success border border-success/20'
                   : side === s && s === 'short'
-                  ? 'bg-red-500/15 text-red-400 border border-red-500/25'
+                  ? 'bg-destructive/10 text-destructive border border-destructive/20'
                   : 'text-muted-foreground',
               )}
             >
@@ -65,9 +65,9 @@ export function PerpetualOrderPanel() {
           <label className="text-xs text-muted-foreground font-medium">
             Size (USDC)
           </label>
-          <div className="flex items-center rounded-md border border-border bg-secondary/40 px-3 py-2.5">
+          <div className="flex items-center rounded-md border border-border bg-surface-2 px-3 py-2.5">
             <span className="flex-1 font-data text-sm text-muted-foreground/40">0.00</span>
-            <span className="text-xs text-zinc-600 font-mono">disabled</span>
+            <span className="text-xs text-muted-foreground/30 font-mono">disabled</span>
           </div>
         </div>
 
@@ -79,9 +79,9 @@ export function PerpetualOrderPanel() {
               {leverage}x
             </span>
           </div>
-          <div className="relative h-1.5 rounded-full bg-zinc-800 overflow-hidden">
+          <div className="relative h-1.5 rounded-full bg-surface-3 overflow-hidden">
             <div
-              className="absolute left-0 top-0 h-full rounded-full bg-zinc-700"
+              className="absolute left-0 top-0 h-full rounded-full bg-border-strong"
               style={{ width: `${((leverage - 1) / 19) * 100}%` }}
             />
           </div>
@@ -92,7 +92,7 @@ export function PerpetualOrderPanel() {
         </div>
 
         {/* Order summary */}
-        <div className="rounded-md border border-border/60 bg-zinc-900/40 px-4 py-3 space-y-2.5">
+        <div className="rounded-md border border-border bg-surface-2 px-4 py-3 space-y-2.5">
           {[
             { label: 'Entry Price', value: `$${DEMO_PRICE}` },
             { label: 'Liquidation Price', value: '--' },
@@ -114,18 +114,18 @@ export function PerpetualOrderPanel() {
           className={cn(
             'w-full h-11 rounded-md text-sm font-semibold',
             'inline-flex items-center justify-center gap-2',
-            'cursor-not-allowed',
+            'cursor-not-allowed border',
             side === 'long'
-              ? 'bg-emerald-500/10 text-emerald-700 border border-emerald-500/15'
-              : 'bg-red-500/10 text-red-700 border border-red-500/15',
+              ? 'bg-success/8 text-success/40 border-success/15'
+              : 'bg-destructive/8 text-destructive/40 border-destructive/15',
           )}
         >
           <Clock className="h-4 w-4" strokeWidth={1.5} />
-          {side === 'long' ? 'Open Long' : 'Open Short'} -- Phase 2
+          {side === 'long' ? 'Open Long' : 'Open Short'} — Phase 2
         </button>
 
         {/* Simulation label */}
-        <p className="text-center text-[11px] text-zinc-600 font-mono leading-relaxed">
+        <p className="text-center text-[11px] text-simulation/60 font-mono leading-relaxed">
           Simulated trading only. No real funds involved.
           Trading available in Phase 2.
         </p>

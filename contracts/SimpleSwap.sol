@@ -4,19 +4,25 @@ pragma solidity ^0.8.20;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 /**
  * @title SimpleSwap
  * @notice A simple swap contract for dETH <-> dUSDC at a fixed rate
  * @dev Deploy this, fund with both tokens, users can swap freely
  */
-contract SimpleSwap is Ownable {
+contract SimpleSwap is Ownable, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     IERC20 public immutable dETH;
     IERC20 public immutable dUSDC;
-    
-    // Rate: 1 dETH = 2953 dUSDC (can be updated by owner)
+
+    // Rate: 1 dETH = `rate` dUSDC. Bounded to prevent zero-output and overflow.
+    // MIN_RATE = 100 (0.1 dUSDC per dETH at 6/18 decimal scale - well below any realistic price)
+    // MAX_RATE = 10_000_000 (10M dUSDC per dETH - far above any realistic ETH price)
+    uint256 public constant MIN_RATE = 100;
+    uint256 public constant MAX_RATE = 10_000_000;
+
     uint256 public rate = 2953;
     
     event Swapped(
@@ -38,7 +44,7 @@ contract SimpleSwap is Ownable {
      * @notice Swap dETH for dUSDC
      * @param amountIn Amount of dETH to swap
      */
-    function swapETHForUSDC(uint256 amountIn) external {
+    function swapETHForUSDC(uint256 amountIn) external nonReentrant {
         require(amountIn > 0, "Amount must be > 0");
         
         // Calculate output: dETH (18 decimals) -> dUSDC (6 decimals)
@@ -60,7 +66,7 @@ contract SimpleSwap is Ownable {
      * @notice Swap dUSDC for dETH
      * @param amountIn Amount of dUSDC to swap
      */
-    function swapUSDCForETH(uint256 amountIn) external {
+    function swapUSDCForETH(uint256 amountIn) external nonReentrant {
         require(amountIn > 0, "Amount must be > 0");
         
         // Calculate output: dUSDC (6 decimals) -> dETH (18 decimals)
@@ -83,7 +89,7 @@ contract SimpleSwap is Ownable {
      * @param newRate New rate (1 dETH = newRate dUSDC)
      */
     function setRate(uint256 newRate) external onlyOwner {
-        require(newRate > 0, "Rate must be > 0");
+        require(newRate >= MIN_RATE && newRate <= MAX_RATE, "Rate out of bounds");
         uint256 oldRate = rate;
         rate = newRate;
         emit RateUpdated(oldRate, newRate);

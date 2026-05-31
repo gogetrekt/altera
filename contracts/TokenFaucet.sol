@@ -2,6 +2,7 @@
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 /**
@@ -10,6 +11,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
  * @dev This is a testnet faucet. It does NOT mint tokens, only transfers pre-funded tokens.
  */
 contract TokenFaucet is Ownable {
+    using SafeERC20 for IERC20;
     // ==================== STATE VARIABLES ====================
 
     IERC20 public token;
@@ -61,10 +63,7 @@ contract TokenFaucet is Ownable {
 
         lastClaim[msg.sender] = block.timestamp;
 
-        require(
-            token.transfer(msg.sender, faucetAmount),
-            "Token transfer failed"
-        );
+        token.safeTransfer(msg.sender, faucetAmount);
 
         emit Claimed(msg.sender, faucetAmount);
     }
@@ -106,9 +105,6 @@ contract TokenFaucet is Ownable {
      * @param amount Amount of tokens to withdraw
      */
     function emergencyWithdraw(uint256 amount) external onlyOwner {
-        require(
-            token.transfer(msg.sender, amount),
-            "Withdrawal failed"
-        );
+        token.safeTransfer(msg.sender, amount);
     }
 }

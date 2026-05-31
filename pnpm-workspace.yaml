@@ -1,0 +1,6 @@
+allowBuilds:
+  bufferutil: true
+  keccak: true
+  secp256k1: true
+  sharp: true
+  utf-8-validate: true

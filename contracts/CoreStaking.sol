@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity 0.8.20;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
@@ -13,6 +13,11 @@ contract CoreStaking is Ownable, ReentrancyGuard {
     uint256 public constant PRECISION = 1e12;
     uint256 public constant USDC_POOL = 0;
     uint256 public constant DETH_POOL = 1;
+
+    // Maximum reward rate per pool: 1e18 CORE-wei per second
+    // At this rate with 1 token staked the contract would drain in ~31.7 years,
+    // which is intentionally generous for a demo while blocking pathological values.
+    uint256 public constant MAX_REWARD_RATE = 1e18;
 
     struct Pool {
         address stakeToken;
@@ -36,6 +41,8 @@ contract CoreStaking is Ownable, ReentrancyGuard {
     event Claim(address indexed user, uint256 indexed poolId, uint256 amount);
     event RewardRateUpdated(uint256 indexed poolId, uint256 newRate);
     event RewardsFunded(uint256 amount);
+    // Emitted when a reward payment is capped by available contract balance
+    event PartialRewardPaid(address indexed user, uint256 indexed poolId, uint256 requested, uint256 paid);
 
     modifier validPool(uint256 _poolId) {
         require(_poolId == USDC_POOL || _poolId == DETH_POOL, "Invalid pool ID");
@@ -52,18 +59,25 @@ contract CoreStaking is Ownable, ReentrancyGuard {
         require(_coreToken != address(0), "Invalid CORE token");
         require(_usdcToken != address(0), "Invalid USDC token");
         require(_dethToken != address(0), "Invalid dETH token");
+        require(_usdcRewardRate <= MAX_REWARD_RATE, "USDC rate exceeds cap");
+        require(_dethRewardRate <= MAX_REWARD_RATE, "dETH rate exceeds cap");
 
         coreToken = IERC20(_coreToken);
 
-        // Initialize USDC pool (Pool 0)
         pools[USDC_POOL].stakeToken = _usdcToken;
         pools[USDC_POOL].rewardRate = _usdcRewardRate;
         pools[USDC_POOL].lastRewardTime = block.timestamp;
 
-        // Initialize dETH pool (Pool 1)
         pools[DETH_POOL].stakeToken = _dethToken;
         pools[DETH_POOL].rewardRate = _dethRewardRate;
         pools[DETH_POOL].lastRewardTime = block.timestamp;
+    }
+
+    /**
+     * @notice Returns available CORE reward reserve in this contract
+     */
+    function rewardReserve() external view returns (uint256) {
+        return coreToken.balanceOf(address(this));
     }
 
     /**
@@ -88,9 +102,24 @@ contract CoreStaking is Ownable, ReentrancyGuard {
     }
 
     /**
+     * @dev Transfer up to `pending` CORE to `recipient`, capped by contract balance.
+     *      Emits PartialRewardPaid when the contract cannot pay the full amount.
+     *      Returns the amount actually transferred.
+     */
+    function _safeRewardTransfer(address recipient, uint256 pending, uint256 poolId) internal returns (uint256) {
+        if (pending == 0) return 0;
+        uint256 available = coreToken.balanceOf(address(this));
+        uint256 toTransfer = pending > available ? available : pending;
+        if (toTransfer == 0) return 0;
+        if (toTransfer < pending) {
+            emit PartialRewardPaid(recipient, poolId, pending, toTransfer);
+        }
+        coreToken.safeTransfer(recipient, toTransfer);
+        return toTransfer;
+    }
+
+    /**
      * @notice Stake tokens in a pool
-     * @param _poolId Pool ID (0 = USDC, 1 = dETH)
-     * @param _amount Amount to stake
      */
     function stake(uint256 _poolId, uint256 _amount)
         external
@@ -104,24 +133,17 @@ contract CoreStaking is Ownable, ReentrancyGuard {
 
         updatePool(_poolId);
 
-        // Harvest existing rewards
         if (user.amount > 0) {
             uint256 pending = (user.amount * pool.accRewardPerShare) / PRECISION -
                 user.rewardDebt;
             if (pending > 0) {
-                coreToken.safeTransfer(msg.sender, pending);
-                emit Claim(msg.sender, _poolId, pending);
+                uint256 paid = _safeRewardTransfer(msg.sender, pending, _poolId);
+                if (paid > 0) emit Claim(msg.sender, _poolId, paid);
             }
         }
 
-        // Transfer stake token from user to contract
-        IERC20(pool.stakeToken).safeTransferFrom(
-            msg.sender,
-            address(this),
-            _amount
-        );
+        IERC20(pool.stakeToken).safeTransferFrom(msg.sender, address(this), _amount);
 
-        // Update user and pool
         user.amount += _amount;
         pool.totalStaked += _amount;
         user.rewardDebt = (user.amount * pool.accRewardPerShare) / PRECISION;
@@ -131,8 +153,6 @@ contract CoreStaking is Ownable, ReentrancyGuard {
 
     /**
      * @notice Unstake tokens and claim rewards
-     * @param _poolId Pool ID (0 = USDC, 1 = dETH)
-     * @param _amount Amount to unstake
      */
     function unstake(uint256 _poolId, uint256 _amount)
         external
@@ -148,20 +168,17 @@ contract CoreStaking is Ownable, ReentrancyGuard {
 
         updatePool(_poolId);
 
-        // Harvest rewards
         uint256 pending = (user.amount * pool.accRewardPerShare) / PRECISION -
             user.rewardDebt;
         if (pending > 0) {
-            coreToken.safeTransfer(msg.sender, pending);
-            emit Claim(msg.sender, _poolId, pending);
+            uint256 paid = _safeRewardTransfer(msg.sender, pending, _poolId);
+            if (paid > 0) emit Claim(msg.sender, _poolId, paid);
         }
 
-        // Update user and pool
         user.amount -= _amount;
         pool.totalStaked -= _amount;
         user.rewardDebt = (user.amount * pool.accRewardPerShare) / PRECISION;
 
-        // Transfer stake token back to user
         IERC20(pool.stakeToken).safeTransfer(msg.sender, _amount);
 
         emit Unstake(msg.sender, _poolId, _amount);
@@ -169,7 +186,6 @@ contract CoreStaking is Ownable, ReentrancyGuard {
 
     /**
      * @notice Claim pending CORE rewards
-     * @param _poolId Pool ID (0 = USDC, 1 = dETH)
      */
     function claim(uint256 _poolId) external validPool(_poolId) nonReentrant {
         Pool storage pool = pools[_poolId];
@@ -184,14 +200,13 @@ contract CoreStaking is Ownable, ReentrancyGuard {
 
         user.rewardDebt = (user.amount * pool.accRewardPerShare) / PRECISION;
 
-        coreToken.safeTransfer(msg.sender, pending);
-
-        emit Claim(msg.sender, _poolId, pending);
+        uint256 paid = _safeRewardTransfer(msg.sender, pending, _poolId);
+        require(paid > 0, "No reward reserve available");
+        emit Claim(msg.sender, _poolId, paid);
     }
 
     /**
-     * @notice Emergency withdraw without rewards
-     * @param _poolId Pool ID (0 = USDC, 1 = dETH)
+     * @notice Emergency withdraw without rewards (always succeeds if stake exists)
      */
     function emergencyWithdraw(uint256 _poolId)
         external
@@ -215,8 +230,6 @@ contract CoreStaking is Ownable, ReentrancyGuard {
 
     /**
      * @notice Get pending rewards for a user
-     * @param _user User address
-     * @param _poolId Pool ID (0 = USDC, 1 = dETH)
      */
     function pendingReward(address _user, uint256 _poolId)
         external
@@ -239,15 +252,16 @@ contract CoreStaking is Ownable, ReentrancyGuard {
     }
 
     /**
-     * @notice Set reward rate for a pool (owner only)
-     * @param _poolId Pool ID (0 = USDC, 1 = dETH)
-     * @param _newRate New reward rate (CORE per second)
+     * @notice Set reward rate for a pool (owner only, capped at MAX_REWARD_RATE)
+     * @dev Settles current rewards before changing rate. No timelock in this version --
+     *      adding a full timelock is documented as a remaining risk.
      */
     function setRewardRate(uint256 _poolId, uint256 _newRate)
         external
         onlyOwner
         validPool(_poolId)
     {
+        require(_newRate <= MAX_REWARD_RATE, "Rate exceeds max");
         updatePool(_poolId);
         pools[_poolId].rewardRate = _newRate;
         emit RewardRateUpdated(_poolId, _newRate);
@@ -255,7 +269,6 @@ contract CoreStaking is Ownable, ReentrancyGuard {
 
     /**
      * @notice Fund contract with CORE rewards (owner only)
-     * @param _amount Amount of CORE to fund
      */
     function fundRewards(uint256 _amount) external onlyOwner {
         require(_amount > 0, "Amount must be > 0");
@@ -265,7 +278,6 @@ contract CoreStaking is Ownable, ReentrancyGuard {
 
     /**
      * @notice Get pool information
-     * @param _poolId Pool ID (0 = USDC, 1 = dETH)
      */
     function getPool(uint256 _poolId)
         external
@@ -278,8 +290,6 @@ contract CoreStaking is Ownable, ReentrancyGuard {
 
     /**
      * @notice Get user information in a pool
-     * @param _poolId Pool ID (0 = USDC, 1 = dETH)
-     * @param _user User address
      */
     function getUserInfo(uint256 _poolId, address _user)
         external

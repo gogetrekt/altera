@@ -95,7 +95,7 @@ Before using Altera, you'll need:
 3. Confirm the transaction in your wallet
 4. Tokens will appear in your wallet within seconds
 
-> 💡 **Note:** There's a 24-hour cooldown between faucet claims for each token.
+> **Note:** There is a cooldown period between faucet claims for each token. The cooldown is read from the contract and may differ from 24 hours if the owner has updated it.
 
 #### 3️⃣ Start Using DeFi
 
@@ -103,6 +103,47 @@ Before using Altera, you'll need:
 - **Provide liquidity** → Go to Liquidity page
 - **Stake and earn** → Go to Staking page
 - **View portfolio** → Go to Dashboard
+
+---
+
+## Local Development
+
+### Prerequisites
+
+- Node.js 18+
+- pnpm
+
+### Setup
+
+```bash
+# Clone the repository
+git clone https://github.com/gogetrekt/altera
+cd altera
+
+# Install dependencies
+pnpm install
+
+# Copy environment variables
+cp .env.example .env.local
+# Edit .env.local and fill in the required values (see .env.example for descriptions)
+
+# Start the development server
+pnpm dev
+```
+
+### Commands
+
+| Command | Description |
+|---------|-------------|
+| `pnpm dev` | Start Next.js development server |
+| `pnpm build` | Build for production |
+| `pnpm test` | Run Hardhat smart contract tests |
+| `pnpm compile` | Compile Solidity contracts |
+| `pnpm lint` | Run ESLint (requires ESLint config to be set up) |
+
+> **Note:** Environment variables are required for Web3 features to work. At minimum, set `NEXT_PUBLIC_SEPOLIA_RPC_URL` for testnet features and `NEXT_PUBLIC_BASE_RPC_URL` for Genesis Pass minting. See `.env.example` for the full list.
+
+> **Note:** The smart contracts have baseline test coverage added in the audit remediation process. This is not a formal security audit. See [SECURITY.md](SECURITY.md) for the current security status.
 
 ---
 
@@ -209,6 +250,8 @@ Stake your tokens to earn CORE rewards over time.
 
 ### ✨ Genesis Pass NFT
 
+> **REAL ETH REQUIRED.** The Genesis Pass mints on Base Mainnet. Minting costs 0.001 ETH plus gas, paid in real ETH. Transactions are irreversible. Verify the contract address before signing any transaction.
+
 An exclusive, limited-edition membership NFT for early Altera supporters.
 
 **Details:**
@@ -265,20 +308,19 @@ Your complete DeFi portfolio overview in one place.
 
 ---
 
-### � Perpetual Trading
+### Perpetual Trading
 
-Advanced perpetual futures trading with leverage *(coming soon)*.
+**Status: Simulation preview only. No real funds are involved.**
 
-Perpetual trading allows you to take leveraged long or short positions on token pairs without owning the underlying assets. Perfect for experienced traders looking to amplify their returns.
+The perpetual trading interface is a paper-trading simulator that demonstrates the planned UI for Phase 2. All positions, P&L values, and price data shown are for demonstration purposes only. No smart contract executes any trade. No funds are required or at risk.
 
-**Coming Soon Features:**
-- 📈 Long and short positions with up to 10x leverage
-- 🔒 Isolated and cross-margin modes
-- ⏱️ 24/7 trading on decentralized orderbook
-- 📊 Real-time P&L tracking
-- 🛡️ Risk management tools (stop-loss, take-profit)
+**Phase 2 planned features (not yet live):**
+- Long and short positions with leverage
+- Isolated and cross-margin modes
+- On-chain position management contracts
+- Real-time P&L tracking
 
-> 📢 **Stay tuned!** Join our [Discord](https://discord.gg/TVz5EuyM4f) for launch announcement
+> **Stay tuned!** Join our [Discord](https://discord.gg/TVz5EuyM4f) for launch announcements
 
 ---
 
@@ -391,7 +433,7 @@ By using Altera, you acknowledge and accept the following risks:
 
 | Risk | Description |
 |------|-------------|
-| 🔧 **Smart Contract Risk** | Despite audits, bugs or vulnerabilities may exist that could result in loss of funds |
+| 🔧 **Smart Contract Risk** | The smart contracts have not undergone a formal third-party security audit. Bugs or vulnerabilities may exist that could result in loss of funds. Do not treat unaudited contracts as production-safe. |
 | 📉 **Impermanent Loss** | Liquidity providers may lose value compared to simply holding tokens |
 | 📊 **Market Volatility** | Token prices can change rapidly and dramatically |
 | 💸 **Loss of Funds** | You may lose some or all of the funds you invest |
@@ -476,7 +518,7 @@ We cannot recover your funds. If you have your seed phrase backed up, you can re
 <details>
 <summary><strong>When is the bridge launching?</strong></summary>
 
-The cross-chain bridge feature is coming soon. Join our [Discord](https://discord.gg/TVz5EuyM4f) for the latest updates and announcements.
+The cross-chain bridge is not yet implemented. The bridge page shows a coming-soon preview with no live functionality. The bridge button is disabled. No funds are transferred. Join our [Discord](https://discord.gg/TVz5EuyM4f) for launch announcements.
 </details>
 
 <details>
@@ -488,7 +530,7 @@ Currently, there are no platform fees beyond network gas fees. This may change i
 <details>
 <summary><strong>Is Altera audited?</strong></summary>
 
-Smart contract security is a top priority. Details about audits will be published in our documentation.
+The smart contracts have not undergone a formal third-party security audit. Baseline security hardening and tests have been applied to the contracts, but this is not a substitute for a professional audit. Do not use these contracts with real funds. See [SECURITY.md](SECURITY.md) for details.
 </details>
 
 <details>

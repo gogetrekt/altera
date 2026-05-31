@@ -20,7 +20,15 @@ You will receive an acknowledgement within 72 hours. We will keep you informed o
 
 The smart contracts in this repository have not undergone a formal third-party security audit.
 
-Do not treat any contract in this repository as production-safe. All contracts are provided for testnet use only unless explicitly stated otherwise.
+Baseline security hardening has been applied to the contracts as part of an internal audit remediation process (Phases 1 through 4). This includes:
+- Supply caps and rate caps on minting and reward contracts
+- SafeERC20 usage across all transfer paths
+- ReentrancyGuard on swap functions
+- Baseline Hardhat unit tests for contract safety properties
+
+None of this constitutes a formal audit by an independent security firm. Do not treat any contract in this repository as production-safe. All contracts are provided for testnet use only unless explicitly stated otherwise.
+
+The project is not production-ready. A formal third-party audit is required before any mainnet deployment of custom contracts.
 
 ## Mainnet Interactions
 

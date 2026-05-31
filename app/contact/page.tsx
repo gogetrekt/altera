@@ -38,7 +38,7 @@ export default function ContactPage() {
         </p>
 
         <div className="mt-6 space-y-4">
-          <div className="border border-border rounded-lg p-4 bg-card/50">
+          <div className="border border-border rounded-lg p-4 bg-surface-1">
             <div className="flex items-start gap-3">
               <div className="p-2 rounded-lg bg-primary/10">
                 <Mail className="h-5 w-5 text-primary" />
@@ -58,7 +58,7 @@ export default function ContactPage() {
             </div>
           </div>
 
-          <div className="border border-border rounded-lg p-4 bg-card/50">
+          <div className="border border-border rounded-lg p-4 bg-surface-1">
             <div className="flex items-start gap-3">
               <div className="p-2 rounded-lg bg-primary/10">
                 <Mail className="h-5 w-5 text-primary" />
@@ -78,7 +78,7 @@ export default function ContactPage() {
             </div>
           </div>
 
-          <div className="border border-border rounded-lg p-4 bg-card/50">
+          <div className="border border-border rounded-lg p-4 bg-surface-1">
             <div className="flex items-start gap-3">
               <div className="p-2 rounded-lg bg-primary/10">
                 <Mail className="h-5 w-5 text-primary" />

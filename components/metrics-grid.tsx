@@ -10,16 +10,16 @@ interface MetricCardProps {
 
 function MetricCard({ label, value, icon, change }: MetricCardProps) {
   return (
-    <div className="group relative rounded-xl border border-border bg-card/50 backdrop-blur-sm p-6 hover:border-primary/30 hover:bg-card/80 transition-all duration-300">
+    <div className="group rounded-lg border border-border bg-surface-1 hover:border-border-strong hover:bg-surface-2 transition-all duration-200 p-5">
       <div className="flex items-start justify-between">
         <div className="space-y-3">
-          <p className="text-sm font-medium text-muted-foreground">{label}</p>
-          <p className="text-2xl sm:text-3xl font-semibold text-foreground tracking-tight">{value}</p>
+          <p className="text-[11px] font-mono uppercase tracking-wide text-muted-foreground/60">{label}</p>
+          <p className="text-2xl sm:text-3xl font-data font-semibold text-foreground">{value}</p>
           {change && (
-            <p className="text-sm text-primary font-medium">{change}</p>
+            <p className="text-xs font-mono text-primary">{change}</p>
           )}
         </div>
-        <div className="p-2.5 rounded-lg bg-secondary/50 text-muted-foreground group-hover:text-primary group-hover:bg-primary/10 transition-colors">
+        <div className="p-2 rounded-md bg-surface-3 border border-border text-muted-foreground group-hover:text-primary group-hover:border-primary/20 group-hover:bg-primary/8 transition-colors">
           {icon}
         </div>
       </div>

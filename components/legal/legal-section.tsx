@@ -75,31 +75,17 @@ interface LegalAlertProps {
 }
 
 export function LegalAlert({ title, children, variant = "warning" }: LegalAlertProps) {
-  const variants = {
-    warning: "bg-yellow-500/10 border-yellow-500/30 text-yellow-500",
-    info: "bg-primary/10 border-primary/30 text-primary",
-    destructive: "bg-destructive/10 border-destructive/30 text-destructive",
-  }
-
-  const icons = {
-    warning: "⚠️",
-    info: "ℹ️",
-    destructive: "🚨",
+  const styles = {
+    warning:     "border border-warning/25 border-l-4 border-l-warning bg-warning/5 text-warning",
+    info:        "border border-primary/20 border-l-4 border-l-primary bg-primary/5 text-primary",
+    destructive: "border border-destructive/25 border-l-4 border-l-destructive bg-destructive/5 text-destructive",
   }
 
   return (
-    <div className={cn(
-      "rounded-lg border p-4 my-6",
-      variants[variant]
-    )}>
-      <div className="flex items-start gap-3">
-        <span className="text-xl">{icons[variant]}</span>
-        <div>
-          <h4 className="font-semibold mb-2">{title}</h4>
-          <div className="text-sm opacity-90">
-            {children}
-          </div>
-        </div>
+    <div className={cn("rounded-md px-4 py-3 my-6", styles[variant])}>
+      <h4 className="text-sm font-semibold mb-1.5">{title}</h4>
+      <div className="text-sm opacity-85 text-foreground">
+        {children}
       </div>
     </div>
   )

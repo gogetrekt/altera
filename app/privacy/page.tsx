@@ -105,8 +105,8 @@ export default function PrivacyPolicyPage() {
         </LegalSubsection>
 
         <LegalSubsection title="What We Do NOT Collect">
-          <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4 mt-4">
-            <p className="text-green-400 font-medium mb-2">
+          <div className="rounded-md border border-success/20 border-l-4 border-l-success bg-success/5 px-4 py-3 mt-4">
+            <p className="text-success text-sm font-semibold mb-2">
               We DO NOT collect:
             </p>
             <LegalList items={[

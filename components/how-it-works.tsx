@@ -30,7 +30,7 @@ export function HowItWorks() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {steps.map((step, index) => (
             <div key={index} className="text-center group">
-              <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-secondary/50 text-muted-foreground group-hover:text-primary group-hover:bg-primary/10 transition-colors mb-4">
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-surface-2 border border-border text-muted-foreground group-hover:text-primary group-hover:border-primary/20 group-hover:bg-primary/8 transition-colors mb-4">
                 {step.icon}
               </div>
               <h3 className="text-lg font-semibold text-foreground mb-2">{step.title}</h3>

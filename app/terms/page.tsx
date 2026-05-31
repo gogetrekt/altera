@@ -197,7 +197,7 @@ export default function TermsOfServicePage() {
 
       {/* Risk Disclosure */}
       <LegalSection id="risk-disclosure" title="Risk Disclosure">
-        <LegalAlert variant="destructive" title="⚠️ IMPORTANT RISK WARNING">
+        <LegalAlert variant="destructive" title="IMPORTANT RISK WARNING">
           <p className="font-semibold mb-2">
             DeFi protocols involve significant and substantial risks. You could lose some or all 
             of your Digital Assets. Please read this section carefully.

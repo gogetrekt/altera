@@ -3,7 +3,6 @@
 import Link from "next/link"
 import { ChevronRight, FileText, Calendar, Printer } from "lucide-react"
 import { PageLayout } from "@/components/page-layout"
-import { Button } from "@/components/ui/button"
 import { TableOfContents, TOCItem } from "./table-of-contents"
 
 interface LegalLayoutProps {
@@ -47,15 +46,13 @@ export function LegalLayout({
                 </div>
                 <h1 className="text-3xl sm:text-4xl font-bold text-foreground">{title}</h1>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
+              <button
                 onClick={handlePrint}
-                className="print:hidden w-fit"
+                className="print:hidden inline-flex items-center gap-2 h-8 px-3 rounded-md border border-border bg-surface-2 text-sm text-muted-foreground hover:bg-surface-3 hover:text-foreground transition-colors duration-150 cursor-pointer"
               >
-                <Printer className="h-4 w-4 mr-2" />
+                <Printer className="h-3.5 w-3.5" strokeWidth={1.5} />
                 Print
-              </Button>
+              </button>
             </div>
             <p className="text-muted-foreground text-lg max-w-3xl">
               {description}
@@ -97,16 +94,18 @@ export function LegalLayout({
                       Contact us at legal@altera.io
                     </a>
                   </div>
-                  <div className="flex gap-4">
-                    <Link href="/terms">
-                      <Button variant="outline" size="sm">
-                        Terms of Service
-                      </Button>
+                  <div className="flex gap-3">
+                    <Link
+                      href="/terms"
+                      className="inline-flex items-center h-8 px-3 rounded-md border border-border bg-surface-2 text-sm text-muted-foreground hover:bg-surface-3 hover:text-foreground transition-colors duration-150"
+                    >
+                      Terms of Service
                     </Link>
-                    <Link href="/privacy">
-                      <Button variant="outline" size="sm">
-                        Privacy Policy
-                      </Button>
+                    <Link
+                      href="/privacy"
+                      className="inline-flex items-center h-8 px-3 rounded-md border border-border bg-surface-2 text-sm text-muted-foreground hover:bg-surface-3 hover:text-foreground transition-colors duration-150"
+                    >
+                      Privacy Policy
                     </Link>
                   </div>
                 </div>

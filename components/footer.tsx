@@ -38,7 +38,7 @@ function FooterLinkList({
 }) {
   return (
     <div>
-      <h3 className="text-xs font-mono uppercase tracking-widest text-muted-foreground/60 mb-3">
+      <h3 className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/50 mb-3">
         {title}
       </h3>
       <ul className="space-y-2.5">
@@ -52,7 +52,7 @@ function FooterLinkList({
             >
               {link.label}
               {link.external && (
-                <ExternalLink className="h-3 w-3 opacity-40" strokeWidth={1.5} />
+                <ExternalLink className="h-3 w-3 opacity-30" strokeWidth={1.5} />
               )}
             </Link>
           </li>
@@ -62,20 +62,28 @@ function FooterLinkList({
   )
 }
 
+function AlteraLogo({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <polygon points="12,2 22,12 12,22 2,12" />
+      <line x1="12" y1="7" x2="12" y2="17" />
+      <line x1="7" y1="12" x2="17" y2="12" />
+    </svg>
+  )
+}
+
 export function Footer() {
   return (
-    <footer className="border-t border-border/50 bg-card/20" aria-label="Site footer">
+    <footer className="border-t border-border bg-surface-1" aria-label="Site footer">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 
         {/* Main grid */}
         <div className="py-10 grid grid-cols-2 md:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
-            <Link href="/" className="flex items-center gap-2 mb-3">
-              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor" aria-hidden="true">
-                <path d="M12 2L22 12L12 22L2 12L12 2Z" />
-              </svg>
-              <span className="text-base font-semibold text-foreground">Altera</span>
+            <Link href="/" className="inline-flex items-center gap-2 mb-3">
+              <AlteraLogo className="h-5 w-5 text-foreground" />
+              <span className="text-sm font-semibold font-mono tracking-tight text-foreground">ALTERA</span>
             </Link>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-[22ch]">
               A testnet DeFi interface for Sepolia and Base. Contracts are unaudited.
@@ -88,10 +96,9 @@ export function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="border-t border-border/50 py-4">
+        <div className="border-t border-border py-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
 
-            {/* Left: copyright + legal */}
             <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
               <span>&copy; {new Date().getFullYear()} Altera</span>
               {legalLinks.map(link => (
@@ -105,10 +112,10 @@ export function Footer() {
               ))}
             </div>
 
-            {/* Right: persistent audit disclaimer */}
+            {/* Persistent audit disclaimer */}
             <div className="flex items-center gap-1.5">
-              <TriangleAlert className="h-3 w-3 text-zinc-500 shrink-0" strokeWidth={1.5} aria-hidden="true" />
-              <p className="text-[11px] text-zinc-500 font-mono">
+              <TriangleAlert className="h-3 w-3 text-muted-foreground/50 shrink-0" strokeWidth={1.5} aria-hidden="true" />
+              <p className="text-[11px] text-muted-foreground/50 font-mono">
                 Contracts are unaudited. Use at your own risk.
               </p>
             </div>

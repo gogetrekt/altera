@@ -22,16 +22,11 @@ export type TxState =
 
 interface TransactionStatusProps {
   state: TxState
-  /** Human-readable description of what was done, shown on success e.g. "Swapped 1.0 dETH for 2953 dUSDC" */
   successMessage?: string
-  /** Tx hash for block explorer link */
   txHash?: string
-  /** "sepolia" | "base" -- determines which explorer to link */
   explorer?: 'sepolia' | 'base'
-  /** Error message shown on failure or revert */
   errorMessage?: string
   className?: string
-  /** Callback to reset the status back to idle */
   onReset?: () => void
 }
 
@@ -53,57 +48,63 @@ export function TransactionStatus({
 
   const explorerUrl = txHash ? `${explorerBaseUrl[explorer]}${txHash}` : undefined
 
+  const isPending = state === 'approving' || state === 'pending' || state === 'confirming'
+  const isSuccess = state === 'success'
+  const isError = state === 'failed' || state === 'reverted'
+  const isRejected = state === 'rejected'
+
   return (
     <div
-      className={cn('rounded-md border px-4 py-3', className, {
-        'border-zinc-700/60 bg-zinc-800/40': state === 'approving' || state === 'pending' || state === 'confirming',
-        'border-green-500/30 bg-green-500/5': state === 'success',
-        'border-red-500/30 bg-red-500/5': state === 'failed' || state === 'reverted',
-        'border-zinc-600/50 bg-zinc-800/30': state === 'rejected',
-      })}
+      className={cn(
+        'rounded-lg border px-4 py-3',
+        isPending && 'border-border bg-surface-2',
+        isSuccess && 'border-success/25 border-l-4 border-l-success bg-success/5',
+        isError && 'border-destructive/25 border-l-4 border-l-destructive bg-destructive/5',
+        isRejected && 'border-border bg-surface-2',
+        className,
+      )}
       role="status"
       aria-live="polite"
     >
       <div className="flex items-start gap-3">
-        {/* Icon */}
         <div className="shrink-0 mt-0.5">
-          {(state === 'approving' || state === 'pending' || state === 'confirming') && (
-            <Loader2 className="h-4 w-4 text-amber-400 animate-spin" strokeWidth={1.5} />
+          {isPending && (
+            // Cobalt spinner = action in progress
+            <Loader2 className="h-4 w-4 text-primary animate-spin" strokeWidth={1.5} />
           )}
-          {state === 'success' && (
-            <CheckCircle2 className="h-4 w-4 text-green-400" strokeWidth={1.5} />
+          {isSuccess && (
+            <CheckCircle2 className="h-4 w-4 text-success" strokeWidth={1.5} />
           )}
-          {(state === 'failed' || state === 'reverted') && (
-            <XCircle className="h-4 w-4 text-red-400" strokeWidth={1.5} />
+          {isError && (
+            <XCircle className="h-4 w-4 text-destructive" strokeWidth={1.5} />
           )}
-          {state === 'rejected' && (
-            <Ban className="h-4 w-4 text-zinc-400" strokeWidth={1.5} />
+          {isRejected && (
+            <Ban className="h-4 w-4 text-muted-foreground" strokeWidth={1.5} />
           )}
         </div>
 
-        {/* Content */}
         <div className="flex-1 min-w-0">
           {state === 'approving' && (
-            <p className="text-sm text-zinc-300">Awaiting approval in wallet...</p>
+            <p className="text-sm text-foreground">Awaiting approval in wallet...</p>
           )}
           {state === 'pending' && (
-            <p className="text-sm text-zinc-300">Transaction submitted. Waiting for confirmation...</p>
+            <p className="text-sm text-foreground">Transaction submitted. Waiting for confirmation...</p>
           )}
           {state === 'confirming' && (
-            <p className="text-sm text-zinc-300">Confirming on-chain...</p>
+            <p className="text-sm text-foreground">Confirming on-chain...</p>
           )}
-          {state === 'success' && (
+          {isSuccess && (
             <div className="space-y-1">
-              <p className="text-sm font-medium text-green-400">Transaction confirmed</p>
+              <p className="text-sm font-medium text-success">Transaction confirmed</p>
               {successMessage && (
-                <p className="text-xs text-green-400/70">{successMessage}</p>
+                <p className="text-xs text-success/70">{successMessage}</p>
               )}
               {explorerUrl && (
                 <a
                   href={explorerUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-xs text-amber-400 hover:text-amber-300 transition-colors duration-150 cursor-pointer"
+                  className="inline-flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors duration-150 cursor-pointer"
                 >
                   View on explorer
                   <ExternalLink className="h-3 w-3" strokeWidth={1.5} />
@@ -113,31 +114,30 @@ export function TransactionStatus({
           )}
           {state === 'failed' && (
             <div className="space-y-1">
-              <p className="text-sm font-medium text-red-400">Transaction failed</p>
+              <p className="text-sm font-medium text-destructive">Transaction failed</p>
               {errorMessage && (
-                <p className="text-xs text-red-400/70">{errorMessage}</p>
+                <p className="text-xs text-destructive/70">{errorMessage}</p>
               )}
             </div>
           )}
           {state === 'reverted' && (
             <div className="space-y-1">
-              <p className="text-sm font-medium text-red-400">Transaction reverted</p>
-              <p className="text-xs text-red-400/70">
+              <p className="text-sm font-medium text-destructive">Transaction reverted</p>
+              <p className="text-xs text-destructive/70">
                 {errorMessage ?? 'The contract rejected this transaction. Check your inputs and try again.'}
               </p>
             </div>
           )}
-          {state === 'rejected' && (
-            <p className="text-sm text-zinc-400">Transaction cancelled by user.</p>
+          {isRejected && (
+            <p className="text-sm text-muted-foreground">Transaction cancelled by user.</p>
           )}
         </div>
 
-        {/* Reset button for error/success states */}
-        {onReset && (state === 'success' || state === 'failed' || state === 'reverted' || state === 'rejected') && (
+        {onReset && (isSuccess || isError || isRejected) && (
           <button
             type="button"
             onClick={onReset}
-            className="shrink-0 text-zinc-500 hover:text-zinc-300 transition-colors duration-150 cursor-pointer"
+            className="shrink-0 text-muted-foreground hover:text-foreground transition-colors duration-150 cursor-pointer"
             aria-label="Dismiss"
           >
             <RotateCcw className="h-3.5 w-3.5" strokeWidth={1.5} />

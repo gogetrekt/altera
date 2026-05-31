@@ -4,19 +4,12 @@ import { TriangleAlert, Wifi } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface NetworkGuardBannerProps {
-  /** The expected network name for display, e.g. "Sepolia" */
   expectedNetwork: string
-  /** Whether the wallet is connected but on wrong network */
   isWrongNetwork: boolean
-  /** Whether the wallet is not connected at all */
   isNotConnected?: boolean
   className?: string
 }
 
-/**
- * Inline banner shown when wallet is connected to wrong network.
- * Must appear above any transaction button. Required by audit remediation.
- */
 export function NetworkGuardBanner({
   expectedNetwork,
   isWrongNetwork,
@@ -30,38 +23,43 @@ export function NetworkGuardBanner({
       <div
         role="status"
         className={cn(
-          'flex items-start gap-3 rounded-md border border-zinc-600/50 bg-zinc-800/40 px-4 py-3',
+          'flex items-start gap-3 rounded-md',
+          'border border-border border-l-4 border-l-border-strong',
+          'bg-surface-2 px-4 py-3',
           className,
         )}
       >
         <Wifi
-          className="h-4 w-4 shrink-0 mt-0.5 text-zinc-400"
+          className="h-4 w-4 shrink-0 mt-0.5 text-muted-foreground"
           aria-hidden="true"
           strokeWidth={1.5}
         />
-        <p className="text-sm text-zinc-400">
+        <p className="text-sm text-muted-foreground">
           Connect your wallet to interact with this page.
         </p>
       </div>
     )
   }
 
+  // Amber = wrong network warning (risk signal)
   return (
     <div
       role="alert"
       className={cn(
-        'flex items-start gap-3 rounded-md border border-amber-500/40 bg-amber-500/5 px-4 py-3',
+        'flex items-start gap-3 rounded-md',
+        'border border-warning/20 border-l-4 border-l-warning',
+        'bg-warning/5 px-4 py-3',
         className,
       )}
     >
       <TriangleAlert
-        className="h-4 w-4 shrink-0 mt-0.5 text-amber-400"
+        className="h-4 w-4 shrink-0 mt-0.5 text-warning"
         aria-hidden="true"
         strokeWidth={1.5}
       />
-      <p className="text-sm text-amber-400/90">
+      <p className="text-sm text-warning/90">
         This page operates on{' '}
-        <strong className="text-amber-400 font-semibold">{expectedNetwork}</strong>.
+        <strong className="text-warning font-semibold">{expectedNetwork}</strong>.
         Your wallet is connected to a different network. Switch networks to continue.
       </p>
     </div>

@@ -1,51 +1,56 @@
 import { cn } from '@/lib/utils'
-import { TriangleAlert, Info, ShieldAlert } from 'lucide-react'
+import { TriangleAlert, Info, ShieldAlert, FlaskConical } from 'lucide-react'
 
-export type RiskBannerVariant = 'warning' | 'danger' | 'info'
+export type RiskBannerVariant = 'warning' | 'danger' | 'info' | 'simulation'
 
 interface RiskBannerProps {
   variant?: RiskBannerVariant
   title?: string
   children: React.ReactNode
   className?: string
-  /** Set to true for audit-required banners that cannot be hidden */
-  persistent?: boolean
 }
 
 const variantConfig: Record<
   RiskBannerVariant,
   {
-    icon: React.ComponentType<{ className?: string }>
-    border: string
-    bg: string
+    icon: React.ComponentType<{ className?: string; strokeWidth?: number }>
+    classes: string
     titleColor: string
     textColor: string
     iconColor: string
   }
 > = {
+  // Amber = risk/warning signal: real ETH, wrong network, unaudited
   warning: {
     icon: TriangleAlert,
-    border: 'border-amber-500/40',
-    bg: 'bg-amber-500/5',
-    titleColor: 'text-amber-400',
-    textColor: 'text-amber-400/80',
-    iconColor: 'text-amber-400',
+    classes: 'border border-warning/20 border-l-4 border-l-warning bg-warning/5',
+    titleColor: 'text-warning',
+    textColor: 'text-warning/80',
+    iconColor: 'text-warning',
   },
+  // Red = destructive / error
   danger: {
     icon: ShieldAlert,
-    border: 'border-red-500/40',
-    bg: 'bg-red-500/5',
-    titleColor: 'text-red-400',
-    textColor: 'text-red-400/80',
-    iconColor: 'text-red-400',
+    classes: 'border border-destructive/20 border-l-4 border-l-destructive bg-destructive/5',
+    titleColor: 'text-destructive',
+    textColor: 'text-destructive/80',
+    iconColor: 'text-destructive',
   },
+  // Neutral structural info
   info: {
     icon: Info,
-    border: 'border-zinc-600/50',
-    bg: 'bg-zinc-800/40',
-    titleColor: 'text-zinc-300',
-    textColor: 'text-zinc-400',
-    iconColor: 'text-zinc-400',
+    classes: 'border border-border border-l-4 border-l-border-strong bg-surface-2',
+    titleColor: 'text-foreground',
+    textColor: 'text-muted-foreground',
+    iconColor: 'text-muted-foreground',
+  },
+  // Violet = simulation-only features
+  simulation: {
+    icon: FlaskConical,
+    classes: 'border border-simulation/20 border-l-4 border-l-simulation bg-simulation/5',
+    titleColor: 'text-simulation',
+    textColor: 'text-simulation/80',
+    iconColor: 'text-simulation',
   },
 }
 
@@ -62,13 +67,16 @@ export function RiskBanner({
     <div
       role="alert"
       className={cn(
-        'flex items-start gap-3 rounded-md border px-4 py-3',
-        config.border,
-        config.bg,
+        'flex items-start gap-3 rounded-md px-4 py-3',
+        config.classes,
         className,
       )}
     >
-      <Icon className={cn('h-4 w-4 shrink-0 mt-0.5', config.iconColor)} aria-hidden="true" />
+      <Icon
+        className={cn('h-4 w-4 shrink-0 mt-0.5', config.iconColor)}
+        strokeWidth={1.5}
+        aria-hidden="true"
+      />
       <div className="flex-1 min-w-0">
         {title && (
           <p className={cn('text-sm font-semibold mb-0.5', config.titleColor)}>{title}</p>

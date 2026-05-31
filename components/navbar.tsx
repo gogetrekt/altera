@@ -16,14 +16,11 @@ import {
   TriangleAlert,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { useAccount, useDisconnect, useBalance, useConnect, useChainId } from 'wagmi'
 import { sepolia, base } from 'wagmi/chains'
 
-// ---------------------------------------------------------------------------
-// Nav data
-// ---------------------------------------------------------------------------
+// ─── Nav data ────────────────────────────────────────────────────────────────
 
 interface NavItem {
   label: string
@@ -67,20 +64,28 @@ const navGroups: NavGroup[] = [
   { label: 'Community', items: communityItems },
 ]
 
-// ---------------------------------------------------------------------------
-// Chain label helper
-// ---------------------------------------------------------------------------
+// ─── Chain helper ─────────────────────────────────────────────────────────────
 
-function getChainLabel(chainId: number | undefined): { label: string; color: string } {
-  if (!chainId) return { label: 'Unknown', color: 'text-zinc-500' }
-  if (chainId === sepolia.id) return { label: 'Sepolia', color: 'text-amber-400' }
-  if (chainId === base.id) return { label: 'Base', color: 'text-blue-400' }
-  return { label: `Chain ${chainId}`, color: 'text-red-400' }
+function getChainBadge(chainId: number | undefined) {
+  if (chainId === sepolia.id) return { label: 'Sepolia', classes: 'bg-primary/10 text-primary' }
+  if (chainId === base.id) return { label: 'Base', classes: 'bg-blue-500/10 text-blue-400' }
+  if (!chainId) return { label: 'Unknown', classes: 'bg-surface-3 text-muted-foreground' }
+  return { label: `Chain ${chainId}`, classes: 'bg-destructive/10 text-destructive' }
 }
 
-// ---------------------------------------------------------------------------
-// Dropdown menu
-// ---------------------------------------------------------------------------
+// ─── Logo mark ────────────────────────────────────────────────────────────────
+
+function AlteraLogo({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <polygon points="12,2 22,12 12,22 2,12" />
+      <line x1="12" y1="7" x2="12" y2="17" />
+      <line x1="7" y1="12" x2="17" y2="12" />
+    </svg>
+  )
+}
+
+// ─── Dropdown ─────────────────────────────────────────────────────────────────
 
 function NavDropdown({ group }: { group: NavGroup }) {
   const [open, setOpen] = useState(false)
@@ -97,14 +102,10 @@ function NavDropdown({ group }: { group: NavGroup }) {
   useEffect(() => () => clearTimeout(timeoutRef.current), [])
 
   return (
-    <div
-      className="relative"
-      onMouseEnter={handleEnter}
-      onMouseLeave={handleLeave}
-    >
+    <div className="relative" onMouseEnter={handleEnter} onMouseLeave={handleLeave}>
       <button
         className={cn(
-          'flex items-center gap-1 px-3 py-2 text-sm font-medium rounded',
+          'flex items-center gap-1 px-3 py-2 text-sm rounded',
           'text-muted-foreground hover:text-foreground',
           'transition-colors duration-150 cursor-pointer',
           open && 'text-foreground',
@@ -121,15 +122,13 @@ function NavDropdown({ group }: { group: NavGroup }) {
 
       <div
         className={cn(
-          'absolute left-0 top-full pt-2 z-50 transition-all duration-200',
-          open
-            ? 'opacity-100 visible translate-y-0'
-            : 'opacity-0 invisible translate-y-1 pointer-events-none',
+          'absolute left-0 top-full pt-2 z-50 transition-all duration-150',
+          open ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible translate-y-1 pointer-events-none',
         )}
         role="menu"
       >
-        <div className="min-w-50 rounded-md border border-border bg-popover/95 backdrop-blur-xl p-1.5 shadow-[0_8px_24px_-4px_rgba(0,0,0,0.4)]">
-          {group.items.map((item) => (
+        <div className="min-w-48 rounded-lg border border-border bg-surface-2 p-1 shadow-[0_8px_32px_-4px_oklch(0_0_0/0.5)]">
+          {group.items.map(item => (
             <Link
               key={item.href}
               href={item.href}
@@ -138,20 +137,22 @@ function NavDropdown({ group }: { group: NavGroup }) {
               role="menuitem"
               className={cn(
                 'flex items-center justify-between px-3 py-2 rounded text-sm',
-                'text-muted-foreground hover:text-foreground hover:bg-secondary',
+                'text-muted-foreground hover:text-foreground hover:bg-surface-3',
                 'transition-colors duration-150 cursor-pointer',
               )}
             >
               <span>{item.label}</span>
               <span className="flex items-center gap-1.5">
                 {item.badge === 'simulation' && (
-                  <span className="text-[10px] text-yellow-500 font-mono uppercase tracking-wide">sim</span>
+                  // Violet = simulation badge in nav items
+                  <span className="text-[10px] text-simulation font-mono uppercase tracking-wide">sim</span>
                 )}
                 {item.badge === 'coming-soon' && (
-                  <span className="text-[10px] text-zinc-500 font-mono uppercase tracking-wide">soon</span>
+                  <span className="text-[10px] text-muted-foreground font-mono uppercase tracking-wide">soon</span>
                 )}
                 {item.badge === 'mainnet' && (
-                  <span className="text-[10px] text-amber-400 font-mono uppercase tracking-wide">mainnet</span>
+                  // Amber = mainnet risk signal
+                  <span className="text-[10px] text-warning font-mono uppercase tracking-wide">mainnet</span>
                 )}
                 {item.external && (
                   <ExternalLink className="h-3 w-3 opacity-40" strokeWidth={1.5} />
@@ -165,9 +166,7 @@ function NavDropdown({ group }: { group: NavGroup }) {
   )
 }
 
-// ---------------------------------------------------------------------------
-// Wallet button
-// ---------------------------------------------------------------------------
+// ─── Wallet button ────────────────────────────────────────────────────────────
 
 function WalletButton() {
   const { address, isConnected } = useAccount()
@@ -178,7 +177,7 @@ function WalletButton() {
   const [copied, setCopied] = useState(false)
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
-  const chain = getChainLabel(chainId)
+  const chainBadge = getChainBadge(chainId)
 
   const { data: ethBal } = useBalance({
     address: address as `0x${string}` | undefined,
@@ -208,7 +207,6 @@ function WalletButton() {
   const handleLeave = () => {
     timeoutRef.current = setTimeout(() => setOpen(false), 120)
   }
-
   useEffect(() => () => clearTimeout(timeoutRef.current), [])
 
   const handleCopy = () => {
@@ -226,28 +224,28 @@ function WalletButton() {
 
   if (!isConnected) {
     return (
-      <Button
-        size="sm"
+      <button
+        type="button"
         onClick={handleConnect}
-        className="h-9 bg-primary hover:bg-primary/90 text-primary-foreground font-medium cursor-pointer active:press"
+        className={cn(
+          'flex items-center gap-2 h-9 px-4 rounded-md text-sm font-medium cursor-pointer',
+          'bg-primary text-primary-foreground',
+          'hover:bg-primary/90 active:scale-[0.98] transition-all duration-150',
+        )}
       >
-        <Wallet className="h-4 w-4 mr-2" strokeWidth={1.5} />
-        Connect Wallet
-      </Button>
+        <Wallet className="h-4 w-4" strokeWidth={1.5} />
+        Connect
+      </button>
     )
   }
 
   return (
-    <div
-      className="relative"
-      onMouseEnter={handleEnter}
-      onMouseLeave={handleLeave}
-    >
+    <div className="relative" onMouseEnter={handleEnter} onMouseLeave={handleLeave}>
       <button
         className={cn(
           'flex items-center gap-2 h-9 px-3 rounded-md cursor-pointer',
-          'bg-secondary hover:bg-secondary/80 border border-border/60',
-          'text-sm font-medium transition-colors duration-150',
+          'bg-surface-2 hover:bg-surface-3 border border-border',
+          'text-sm transition-colors duration-150',
         )}
         aria-expanded={open}
         aria-haspopup="true"
@@ -258,33 +256,30 @@ function WalletButton() {
         <span
           className={cn(
             'px-1.5 py-0.5 rounded text-[10px] font-mono uppercase tracking-wide',
-            chainId === sepolia.id && 'bg-amber-500/10 text-amber-400',
-            chainId === base.id && 'bg-blue-500/10 text-blue-400',
-            chainId !== sepolia.id && chainId !== base.id && 'bg-red-500/10 text-red-400',
+            chainBadge.classes,
           )}
         >
-          {chain.label}
+          {chainBadge.label}
         </span>
       </button>
 
       <div
         className={cn(
-          'absolute right-0 top-full pt-2 z-50 transition-all duration-200',
-          open
-            ? 'opacity-100 visible translate-y-0'
-            : 'opacity-0 invisible translate-y-1 pointer-events-none',
+          'absolute right-0 top-full pt-2 z-50 transition-all duration-150',
+          open ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible translate-y-1 pointer-events-none',
         )}
       >
-        <div className="w-56 rounded-md border border-border bg-popover/95 backdrop-blur-xl p-3 shadow-[0_8px_24px_-4px_rgba(0,0,0,0.4)] space-y-3">
+        <div className="w-56 rounded-lg border border-border bg-surface-2 p-3 shadow-[0_8px_32px_-4px_oklch(0_0_0/0.5)] space-y-3">
           {/* Balances */}
           <div className="space-y-1.5">
+            <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/60">Balances</p>
             {[
               { label: 'dETH', value: Number(ethBal?.formatted ?? 0).toFixed(4) },
               { label: 'dUSDC', value: Number(usdcBal?.formatted ?? 0).toFixed(2) },
               { label: 'CORE', value: Number(coreBal?.formatted ?? 0).toFixed(2) },
             ].map(row => (
               <div key={row.label} className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">{row.label}</span>
+                <span className="text-muted-foreground font-mono">{row.label}</span>
                 <span className="font-data text-foreground">{row.value}</span>
               </div>
             ))}
@@ -293,8 +288,8 @@ function WalletButton() {
           <div className="h-px bg-border" />
 
           {/* Address */}
-          <div className="space-y-1.5">
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-mono">Connected wallet</p>
+          <div className="space-y-1">
+            <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/60">Connected wallet</p>
             <div className="flex items-center justify-between gap-2">
               <p className="font-data text-xs text-foreground truncate">{address}</p>
               <button
@@ -304,7 +299,7 @@ function WalletButton() {
                 aria-label="Copy address"
               >
                 {copied
-                  ? <Check className="h-3.5 w-3.5 text-green-400" strokeWidth={1.5} />
+                  ? <Check className="h-3.5 w-3.5 text-success" strokeWidth={1.5} />
                   : <Copy className="h-3.5 w-3.5" strokeWidth={1.5} />
                 }
               </button>
@@ -317,7 +312,7 @@ function WalletButton() {
           <div className="space-y-0.5">
             <Link
               href="/dashboard"
-              className="flex items-center gap-2 px-2 py-1.5 rounded text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors duration-150 cursor-pointer"
+              className="flex items-center gap-2 px-2 py-1.5 rounded text-sm text-muted-foreground hover:text-foreground hover:bg-surface-3 transition-colors duration-150 cursor-pointer"
             >
               <LayoutDashboard className="h-3.5 w-3.5" strokeWidth={1.5} />
               Dashboard
@@ -325,7 +320,7 @@ function WalletButton() {
             <button
               type="button"
               onClick={() => disconnect()}
-              className="flex items-center gap-2 w-full px-2 py-1.5 rounded text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors duration-150 cursor-pointer"
+              className="flex items-center gap-2 w-full px-2 py-1.5 rounded text-sm text-muted-foreground hover:text-foreground hover:bg-surface-3 transition-colors duration-150 cursor-pointer"
             >
               <LogOut className="h-3.5 w-3.5" strokeWidth={1.5} />
               Disconnect
@@ -337,18 +332,11 @@ function WalletButton() {
   )
 }
 
-// ---------------------------------------------------------------------------
-// Mobile drawer
-// ---------------------------------------------------------------------------
+// ─── Mobile drawer ────────────────────────────────────────────────────────────
 
 function MobileNav({ open, onClose }: { open: boolean; onClose: () => void }) {
-  // Lock body scroll when open
   useEffect(() => {
-    if (open) {
-      document.body.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = ''
-    }
+    document.body.style.overflow = open ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
   }, [open])
 
@@ -356,16 +344,13 @@ function MobileNav({ open, onClose }: { open: boolean; onClose: () => void }) {
 
   return (
     <>
-      {/* Backdrop */}
       <div
-        className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm"
+        className="fixed inset-0 z-40 bg-background/70 backdrop-blur-sm"
         onClick={onClose}
         aria-hidden="true"
       />
-
-      {/* Drawer */}
       <div
-        className="fixed inset-y-0 left-0 z-50 w-72 bg-card border-r border-border flex flex-col"
+        className="fixed inset-y-0 left-0 z-50 w-72 bg-surface-1 border-r border-border flex flex-col"
         role="dialog"
         aria-modal="true"
         aria-label="Navigation menu"
@@ -373,24 +358,24 @@ function MobileNav({ open, onClose }: { open: boolean; onClose: () => void }) {
         {/* Header */}
         <div className="flex items-center justify-between px-4 h-14 border-b border-border shrink-0">
           <Link href="/" className="flex items-center gap-2" onClick={onClose}>
-            <AlteraLogo className="h-5 w-5" />
-            <span className="text-lg font-semibold">Altera</span>
+            <AlteraLogo className="h-5 w-5 text-foreground" />
+            <span className="text-base font-semibold tracking-tight font-mono">ALTERA</span>
           </Link>
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors cursor-pointer"
+            className="p-1.5 rounded text-muted-foreground hover:text-foreground hover:bg-surface-3 transition-colors cursor-pointer"
             aria-label="Close menu"
           >
             <X className="h-5 w-5" strokeWidth={1.5} />
           </button>
         </div>
 
-        {/* Nav content */}
+        {/* Nav */}
         <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-4">
           {navGroups.map(group => (
             <div key={group.label}>
-              <p className="px-2 pb-1.5 text-[10px] font-mono uppercase tracking-widest text-muted-foreground/60">
+              <p className="px-2 pb-1.5 text-[10px] font-mono uppercase tracking-widest text-muted-foreground/50">
                 {group.label}
               </p>
               <div className="space-y-0.5">
@@ -401,15 +386,15 @@ function MobileNav({ open, onClose }: { open: boolean; onClose: () => void }) {
                     target={item.external ? '_blank' : undefined}
                     rel={item.external ? 'noopener noreferrer' : undefined}
                     onClick={onClose}
-                    className="flex items-center justify-between px-2 py-2 rounded text-sm text-foreground hover:bg-secondary transition-colors duration-150 cursor-pointer"
+                    className="flex items-center justify-between px-2 py-2 rounded text-sm text-foreground hover:bg-surface-3 transition-colors duration-150 cursor-pointer"
                   >
                     <span>{item.label}</span>
                     <span className="flex items-center gap-1.5">
                       {item.badge === 'simulation' && (
-                        <span className="text-[10px] text-yellow-500 font-mono">sim</span>
+                        <span className="text-[10px] text-simulation font-mono">sim</span>
                       )}
                       {item.badge === 'coming-soon' && (
-                        <span className="text-[10px] text-zinc-500 font-mono">soon</span>
+                        <span className="text-[10px] text-muted-foreground font-mono">soon</span>
                       )}
                       {item.external && (
                         <ExternalLink className="h-3 w-3 text-muted-foreground/40" strokeWidth={1.5} />
@@ -427,33 +412,34 @@ function MobileNav({ open, onClose }: { open: boolean; onClose: () => void }) {
             <Link
               href="/dashboard"
               onClick={onClose}
-              className="flex items-center px-2 py-2 rounded text-sm text-foreground hover:bg-secondary transition-colors duration-150 cursor-pointer"
+              className="flex items-center px-2 py-2 rounded text-sm text-foreground hover:bg-surface-3 transition-colors duration-150 cursor-pointer"
             >
               Dashboard
             </Link>
             <Link
               href="/faucet"
               onClick={onClose}
-              className="flex items-center px-2 py-2 rounded text-sm text-foreground hover:bg-secondary transition-colors duration-150 cursor-pointer"
+              className="flex items-center px-2 py-2 rounded text-sm text-foreground hover:bg-surface-3 transition-colors duration-150 cursor-pointer"
             >
               Faucet
             </Link>
+            {/* Genesis: amber = mainnet risk signal, not brand color */}
             <Link
               href="/genesis"
               onClick={onClose}
-              className="flex items-center justify-between px-2 py-2 rounded text-sm text-amber-400 bg-amber-500/8 hover:bg-amber-500/12 transition-colors duration-150 cursor-pointer"
+              className="flex items-center justify-between px-2 py-2 rounded text-sm text-warning bg-warning/8 hover:bg-warning/12 transition-colors duration-150 cursor-pointer"
             >
               <span>Genesis Pass</span>
-              <span className="text-[10px] font-mono uppercase tracking-wide text-amber-500">Mainnet</span>
+              <span className="text-[10px] font-mono uppercase tracking-wide text-warning/80">Mainnet</span>
             </Link>
           </div>
         </nav>
 
-        {/* Footer disclaimer */}
+        {/* Footer disclaimer -- always visible */}
         <div className="px-4 py-3 border-t border-border shrink-0">
           <div className="flex items-center gap-2">
-            <TriangleAlert className="h-3 w-3 text-zinc-500 shrink-0" strokeWidth={1.5} />
-            <p className="text-[10px] text-zinc-500 leading-snug">
+            <TriangleAlert className="h-3 w-3 text-muted-foreground/60 shrink-0" strokeWidth={1.5} />
+            <p className="text-[10px] text-muted-foreground/60 font-mono leading-snug">
               Contracts are unaudited. Use at your own risk.
             </p>
           </div>
@@ -463,21 +449,7 @@ function MobileNav({ open, onClose }: { open: boolean; onClose: () => void }) {
   )
 }
 
-// ---------------------------------------------------------------------------
-// Logo
-// ---------------------------------------------------------------------------
-
-function AlteraLogo({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden="true">
-      <path d="M12 2L22 12L12 22L2 12L12 2Z" />
-    </svg>
-  )
-}
-
-// ---------------------------------------------------------------------------
-// Main Navbar
-// ---------------------------------------------------------------------------
+// ─── Main Navbar ──────────────────────────────────────────────────────────────
 
 export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -485,15 +457,17 @@ export function Navbar() {
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-30 border-b border-border/50 bg-background/80 backdrop-blur-xl">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex h-14 items-center justify-between gap-4">
+      <header className="fixed top-0 left-0 right-0 z-30 h-14 border-b border-border bg-surface-1">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-full">
+          <div className="flex h-full items-center justify-between gap-4">
 
             {/* Left: Logo + Desktop Nav */}
             <div className="flex items-center gap-6">
               <Link href="/" className="flex items-center gap-2 shrink-0">
                 <AlteraLogo className="h-5 w-5 text-foreground" />
-                <span className="text-lg font-semibold text-foreground tracking-tight">Altera</span>
+                <span className="text-base font-semibold tracking-tight font-mono text-foreground">
+                  ALTERA
+                </span>
               </Link>
 
               <nav className="hidden md:flex items-center gap-0.5" aria-label="Main navigation">
@@ -503,7 +477,7 @@ export function Navbar() {
                 <Link
                   href="/dashboard"
                   className={cn(
-                    'px-3 py-2 text-sm font-medium rounded transition-colors duration-150',
+                    'px-3 py-2 text-sm rounded transition-colors duration-150',
                     pathname === '/dashboard'
                       ? 'text-foreground'
                       : 'text-muted-foreground hover:text-foreground',
@@ -514,7 +488,7 @@ export function Navbar() {
                 <Link
                   href="/faucet"
                   className={cn(
-                    'px-3 py-2 text-sm font-medium rounded transition-colors duration-150',
+                    'px-3 py-2 text-sm rounded transition-colors duration-150',
                     pathname === '/faucet'
                       ? 'text-foreground'
                       : 'text-muted-foreground hover:text-foreground',
@@ -525,18 +499,17 @@ export function Navbar() {
               </nav>
             </div>
 
-            {/* Right: Testnet badge + Genesis + Wallet + Mobile toggle */}
+            {/* Right */}
             <div className="flex items-center gap-2">
-              {/* Persistent testnet badge */}
               <StatusBadge variant="testnet" label="Testnet" className="hidden sm:inline-flex" />
 
-              {/* Genesis Pass CTA */}
+              {/* Genesis -- amber = mainnet signal */}
               <Link
                 href="/genesis"
                 className={cn(
-                  'hidden md:inline-flex items-center gap-1.5 h-9 px-3 rounded-md text-sm font-medium',
-                  'bg-amber-500/10 text-amber-400 border border-amber-500/30',
-                  'hover:bg-amber-500/15 transition-colors duration-150 cursor-pointer',
+                  'hidden md:inline-flex items-center gap-1.5 h-9 px-3 rounded-md text-sm',
+                  'bg-warning/8 text-warning border border-warning/25',
+                  'hover:bg-warning/14 transition-colors duration-150 cursor-pointer',
                 )}
               >
                 Genesis Pass
@@ -544,11 +517,10 @@ export function Navbar() {
 
               <WalletButton />
 
-              {/* Mobile menu toggle */}
               <button
                 type="button"
                 onClick={() => setMobileOpen(true)}
-                className="md:hidden p-2 rounded text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors cursor-pointer"
+                className="md:hidden p-2 rounded text-muted-foreground hover:text-foreground hover:bg-surface-3 transition-colors cursor-pointer"
                 aria-label="Open navigation menu"
                 aria-expanded={mobileOpen}
               >
@@ -559,7 +531,6 @@ export function Navbar() {
         </div>
       </header>
 
-      {/* Mobile drawer */}
       <MobileNav open={mobileOpen} onClose={() => setMobileOpen(false)} />
     </>
   )

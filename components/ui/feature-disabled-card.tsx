@@ -7,7 +7,6 @@ interface FeatureDisabledCardProps {
   variant?: FeatureDisabledVariant
   title?: string
   description?: string
-  /** The interactive UI to show dimmed beneath the overlay */
   children?: React.ReactNode
   className?: string
 }
@@ -34,8 +33,8 @@ const variantConfig: Record<
 }
 
 /**
- * Wraps a disabled feature's UI with a clear visual overlay.
- * All children are rendered but non-interactive (pointer-events-none + dim).
+ * Wraps disabled feature UI with a clear non-interactive overlay.
+ * Children are rendered but pointer-events-none + dimmed.
  * Required by audit remediation -- disabled features must look non-functional.
  */
 export function FeatureDisabledCard({
@@ -50,37 +49,56 @@ export function FeatureDisabledCard({
   const displayTitle = title ?? config.label
   const displayDesc = description ?? config.sublabel
 
-  return (
-    <div className={cn('relative rounded-md overflow-hidden', className)}>
-      {/* Dimmed background content */}
-      {children && (
+  if (children) {
+    return (
+      <div className={cn('relative rounded-lg overflow-hidden', className)}>
+        {/* Dimmed, non-interactive content beneath */}
         <div
-          className="pointer-events-none select-none opacity-30 blur-[1px]"
+          className="pointer-events-none select-none opacity-25 blur-[1px]"
           aria-hidden="true"
         >
           {children}
         </div>
-      )}
 
-      {/* Overlay */}
-      <div
-        className={cn(
-          'absolute inset-0 flex flex-col items-center justify-center gap-3 p-6',
-          'bg-background/80 backdrop-blur-sm',
-          !children && 'relative inset-auto flex min-h-45 rounded-md border border-zinc-700/40 bg-zinc-900/60',
-        )}
-        role="status"
-        aria-label={displayTitle}
-      >
-        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800/80 border border-zinc-700/40">
-          <Icon className="h-5 w-5 text-zinc-500" strokeWidth={1.5} aria-hidden="true" />
+        {/* Overlay */}
+        <div
+          className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-6 bg-background/75 backdrop-blur-[2px]"
+          role="status"
+          aria-label={displayTitle}
+        >
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-3 border border-border">
+            <Icon className="h-5 w-5 text-muted-foreground" strokeWidth={1.5} aria-hidden="true" />
+          </div>
+          <div className="text-center">
+            <p className="text-sm font-semibold text-foreground">{displayTitle}</p>
+            <p className="text-xs text-muted-foreground mt-1 max-w-[30ch] leading-relaxed">
+              {displayDesc}
+            </p>
+          </div>
         </div>
-        <div className="text-center">
-          <p className="text-sm font-semibold text-zinc-300">{displayTitle}</p>
-          <p className="text-xs text-zinc-500 mt-1 max-w-[30ch] leading-relaxed">
-            {displayDesc}
-          </p>
-        </div>
+      </div>
+    )
+  }
+
+  // Standalone card when no children
+  return (
+    <div
+      className={cn(
+        'flex flex-col items-center justify-center gap-3 p-6 min-h-45',
+        'rounded-lg border border-border bg-surface-1',
+        className,
+      )}
+      role="status"
+      aria-label={displayTitle}
+    >
+      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-3 border border-border">
+        <Icon className="h-5 w-5 text-muted-foreground" strokeWidth={1.5} aria-hidden="true" />
+      </div>
+      <div className="text-center">
+        <p className="text-sm font-semibold text-foreground">{displayTitle}</p>
+        <p className="text-xs text-muted-foreground mt-1 max-w-[30ch] leading-relaxed">
+          {displayDesc}
+        </p>
       </div>
     </div>
   )

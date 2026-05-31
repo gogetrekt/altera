@@ -3,10 +3,8 @@ import { cn } from '@/lib/utils'
 interface SectionHeaderProps {
   title: string
   description?: string
-  /** Optional slot for badges or action buttons rendered on the right */
   action?: React.ReactNode
   className?: string
-  /** Heading level -- defaults to h1 for top-level page headers */
   as?: 'h1' | 'h2' | 'h3'
 }
 

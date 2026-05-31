@@ -1,34 +1,24 @@
 import { cn } from '@/lib/utils'
+import { type LucideIcon } from 'lucide-react'
 
 interface MetricCardProps {
   label: string
   value: string | React.ReactNode
-  /** Optional supporting detail line below the value */
   detail?: string | React.ReactNode
-  /** Icon rendered in the top-left corner */
-  icon?: React.ComponentType<{ className?: string }>
+  icon?: LucideIcon
   className?: string
-  /** When true, renders skeleton placeholders instead of value/detail */
   isLoading?: boolean
 }
 
 function SkeletonBar({ className }: { className?: string }) {
   return (
     <div
-      className={cn(
-        'rounded skeleton-shimmer',
-        className,
-      )}
+      className={cn('rounded skeleton-shimmer', className)}
       aria-hidden="true"
     />
   )
 }
 
-/**
- * Displays a single numeric metric with label and optional supporting detail.
- * All numeric values must be passed pre-formatted as font-data strings.
- * Never shows fabricated or hardcoded change percentages.
- */
 export function MetricCard({
   label,
   value,
@@ -40,30 +30,28 @@ export function MetricCard({
   return (
     <div
       className={cn(
-        'flex flex-col gap-3 rounded-md border border-border bg-card px-4 py-4',
+        'flex flex-col gap-2 rounded-lg border border-border bg-surface-1 px-5 py-4',
         className,
       )}
     >
-      <div className="flex items-center justify-between">
-        {Icon && (
-          <Icon className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-        )}
-      </div>
+      {Icon && (
+        <Icon className="h-4 w-4 text-muted-foreground" aria-hidden="true" strokeWidth={1.5} />
+      )}
 
       {isLoading ? (
         <>
-          <SkeletonBar className="h-7 w-28" />
+          <SkeletonBar className="h-7 w-28 mt-1" />
           <SkeletonBar className="h-3.5 w-20" />
         </>
       ) : (
         <>
-          <div className="font-data text-xl font-semibold text-foreground leading-none tabular-nums">
+          <div className="font-data text-2xl font-medium text-foreground leading-none tabular-nums">
             {value}
           </div>
-          <div className="flex items-center justify-between">
-            <p className="text-xs text-muted-foreground">{label}</p>
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-xs text-muted-foreground font-mono uppercase tracking-wide">{label}</p>
             {detail && (
-              <span className="text-xs text-muted-foreground">{detail}</span>
+              <span className="text-xs text-muted-foreground font-data">{detail}</span>
             )}
           </div>
         </>

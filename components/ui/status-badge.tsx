@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils'
-import { Clock, FlaskConical, Wifi, WifiOff, CircleDot, CircleOff } from 'lucide-react'
+import { Clock, FlaskConical, CircleDot, CircleOff } from 'lucide-react'
 
 export type StatusBadgeVariant =
   | 'testnet'
@@ -18,51 +18,46 @@ interface StatusBadgeProps {
 
 const variantConfig: Record<
   StatusBadgeVariant,
-  { label: string; icon: React.ComponentType<{ className?: string }>; classes: string }
+  { label: string; icon: React.ComponentType<{ className?: string; strokeWidth?: number }>; classes: string }
 > = {
   testnet: {
     label: 'Sepolia Testnet',
-    icon: ({ className }) => <CircleDot className={className} />,
-    classes:
-      'bg-zinc-800/80 text-zinc-300 border border-zinc-700/60',
+    icon: ({ className }) => <CircleDot className={className} strokeWidth={1.5} />,
+    classes: 'bg-surface-2 text-muted-foreground border border-border',
   },
   mainnet: {
+    // Amber = risk/warning signal. Mainnet badge signals real-money context.
     label: 'Base Mainnet',
-    icon: ({ className }) => <CircleDot className={className} />,
-    classes:
-      'bg-amber-500/10 text-amber-400 border border-amber-500/30',
+    icon: ({ className }) => <CircleDot className={className} strokeWidth={1.5} />,
+    classes: 'bg-warning/8 text-warning border border-warning/30',
   },
   simulation: {
+    // Violet = simulation-only, reserved for Perpetual preview
     label: 'Simulation Only',
-    icon: ({ className }) => <FlaskConical className={className} />,
-    classes:
-      'bg-yellow-500/10 text-yellow-400 border border-yellow-500/30',
+    icon: ({ className }) => <FlaskConical className={className} strokeWidth={1.5} />,
+    classes: 'bg-simulation/10 text-simulation border border-simulation/30',
   },
   'coming-soon': {
     label: 'Coming Soon',
-    icon: ({ className }) => <Clock className={className} />,
-    classes:
-      'bg-zinc-800/60 text-zinc-400 border border-zinc-700/40',
+    icon: ({ className }) => <Clock className={className} strokeWidth={1.5} />,
+    classes: 'bg-surface-2 text-muted-foreground border border-border-subtle',
   },
   live: {
     label: 'Live',
     icon: ({ className }) => (
-      <span className={cn('block h-1.5 w-1.5 rounded-full bg-green-400 pulse-live', className)} />
+      <span className={cn('block h-1.5 w-1.5 rounded-full bg-success pulse-live', className)} />
     ),
-    classes:
-      'bg-green-500/10 text-green-400 border border-green-500/30',
+    classes: 'bg-success/10 text-success border border-success/30',
   },
   disabled: {
     label: 'Disabled',
-    icon: ({ className }) => <CircleOff className={className} />,
-    classes:
-      'bg-zinc-800/40 text-zinc-500 border border-zinc-700/30',
+    icon: ({ className }) => <CircleOff className={className} strokeWidth={1.5} />,
+    classes: 'bg-surface-2 text-foreground/30 border border-border-subtle',
   },
   'phase-2': {
     label: 'Phase 2',
-    icon: ({ className }) => <Clock className={className} />,
-    classes:
-      'bg-zinc-800/60 text-zinc-400 border border-zinc-700/40',
+    icon: ({ className }) => <Clock className={className} strokeWidth={1.5} />,
+    classes: 'bg-surface-2 text-muted-foreground border border-border-subtle',
   },
 }
 

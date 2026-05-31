@@ -23,11 +23,7 @@ interface EmptyStateProps {
 
 const variantDefaults: Record<
   EmptyStateVariant,
-  {
-    icon: LucideIcon
-    title: string
-    description: string
-  }
+  { icon: LucideIcon; title: string; description: string }
 > = {
   'no-wallet': {
     icon: Wallet,
@@ -42,7 +38,7 @@ const variantDefaults: Record<
   'coming-soon': {
     icon: Clock,
     title: 'Coming in Phase 2',
-    description: 'This feature is not yet available. Check back soon.',
+    description: 'This feature is not yet available.',
   },
   'no-tokens': {
     icon: Droplets,
@@ -80,19 +76,19 @@ export function EmptyState({
         className,
       )}
     >
-      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800/60 border border-zinc-700/40">
-        <Icon className="h-5 w-5 text-zinc-500" strokeWidth={1.5} aria-hidden="true" />
+      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-3 border border-border">
+        <Icon className="h-5 w-5 text-muted-foreground" strokeWidth={1.5} aria-hidden="true" />
       </div>
       <div className="space-y-1">
-        <p className="text-sm font-medium text-zinc-300">{displayTitle}</p>
-        <p className="text-xs text-zinc-500 max-w-[28ch] mx-auto leading-relaxed">
+        <p className="text-sm font-medium text-foreground">{displayTitle}</p>
+        <p className="text-xs text-muted-foreground max-w-[28ch] mx-auto leading-relaxed">
           {displayDesc}
         </p>
       </div>
       {action && (
         <Link
           href={action.href}
-          className="inline-flex items-center gap-1.5 text-xs text-amber-400 hover:text-amber-300 transition-colors duration-150 cursor-pointer mt-1"
+          className="inline-flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 transition-colors duration-150 cursor-pointer mt-1"
         >
           {action.label}
           <ArrowRight className="h-3 w-3" strokeWidth={1.5} />

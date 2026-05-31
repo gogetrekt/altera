@@ -25,3 +25,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# hardhat build artifacts
+/artifacts/
+/cache/
+/typechain-types/
+
+.claude

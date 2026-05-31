@@ -6,7 +6,7 @@ If you discover a security vulnerability in this repository, please report it re
 
 **Do not open a public GitHub issue for security vulnerabilities.**
 
-Send a report to: security@archivecircle.xyz
+Send a report to: 
 
 Include in your report:
 - A description of the vulnerability

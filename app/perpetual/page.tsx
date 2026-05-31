@@ -1,226 +1,205 @@
-"use client"
+import { PageLayout } from '@/components/page-layout'
+import { SimulationBanner } from '@/components/ui/simulation-banner'
+import { StatusBadge } from '@/components/ui/status-badge'
+import { SectionHeader } from '@/components/ui/section-header'
+import { EmptyState } from '@/components/ui/empty-state'
+import { PerpetualOrderPanel } from '@/components/perpetual-order-panel'
+import {
+  TrendingUp,
+  TrendingDown,
+  BarChart2,
+  Clock,
+} from 'lucide-react'
 
-import { useState } from "react"
-import { TrendingUp, TrendingDown, BarChart3, AlertTriangle, Clock } from "lucide-react"
-import { PageLayout } from "@/components/page-layout"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
-import { Slider } from "@/components/ui/slider"
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
-import { Alert, AlertDescription } from "@/components/ui/alert"
+// ─── Static demo market data (clearly labelled as demo) ───────────────────────
+
+const DEMO_MARKET = {
+  pair: 'ETH-PERP',
+  price: '2,534.82',
+  change: '+2.47%',
+  changePositive: true,
+  high24h: '2,589.14',
+  low24h: '2,478.53',
+  volume24h: '1.24B',
+  openInterest: '847.3M',
+} as const
+
+// ─── Market stat cell ─────────────────────────────────────────────────────────
+
+function MarketStat({
+  label,
+  value,
+  positive,
+}: {
+  label: string
+  value: string
+  positive?: boolean
+}) {
+  return (
+    <div className="flex flex-col gap-0.5">
+      <span className="text-[11px] text-muted-foreground font-mono uppercase tracking-wide">
+        {label}
+      </span>
+      <span
+        className={
+          positive === undefined
+            ? 'text-sm font-data font-medium text-foreground'
+            : positive
+            ? 'text-sm font-data font-medium text-emerald-400'
+            : 'text-sm font-data font-medium text-red-400'
+        }
+      >
+        {value}
+      </span>
+    </div>
+  )
+}
+
+// ─── Chart placeholder ────────────────────────────────────────────────────────
+
+function ChartPlaceholder() {
+  return (
+    <div className="rounded-xl border border-border bg-card overflow-hidden">
+      <div className="flex items-center justify-between px-5 py-3 border-b border-border">
+        <div className="flex items-center gap-2">
+          <BarChart2 className="h-4 w-4 text-muted-foreground" strokeWidth={1.5} />
+          <span className="text-sm font-medium text-foreground">Price Chart</span>
+          <span className="text-[11px] font-mono text-zinc-600 uppercase tracking-wide">(Demo)</span>
+        </div>
+        <StatusBadge variant="phase-2" label="Phase 2" />
+      </div>
+      <div className="flex flex-col items-center justify-center gap-3 py-16 px-4">
+        {/* Decorative fake chart bars */}
+        <div className="flex items-end gap-1 h-12 opacity-20" aria-hidden="true">
+          {[40, 65, 30, 80, 55, 70, 45, 90, 60, 75, 50, 85, 35, 95, 62].map((h, i) => (
+            <div
+              key={i}
+              className="w-3 rounded-sm bg-zinc-500"
+              style={{ height: `${h}%` }}
+            />
+          ))}
+        </div>
+        <div className="text-center space-y-1">
+          <p className="text-sm font-medium text-zinc-400">
+            TradingView chart integration
+          </p>
+          <p className="text-xs text-zinc-600">Available when perpetual trading ships in Phase 2</p>
+        </div>
+        <div className="flex items-center gap-1.5 rounded px-2.5 py-1 bg-zinc-800/60 border border-zinc-700/40">
+          <Clock className="h-3 w-3 text-zinc-500" strokeWidth={1.5} />
+          <span className="text-[11px] font-mono text-zinc-500">Phase 2</span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Positions / Orders table (empty, coming soon) ────────────────────────────
+
+function PositionsTable({ title }: { title: string }) {
+  return (
+    <div className="rounded-xl border border-border bg-card overflow-hidden">
+      <div className="px-5 py-3 border-b border-border">
+        <h3 className="text-sm font-medium text-foreground">{title}</h3>
+      </div>
+      <EmptyState
+        variant="coming-soon"
+        title="No data"
+        description={`${title} will appear here when perpetual trading is live.`}
+        className="py-8"
+      />
+    </div>
+  )
+}
+
+// ─── Page (Server Component -- SimulationBanner cannot be toggled off) ────────
 
 export default function PerpetualPage() {
-  const [orderType, setOrderType] = useState<"long" | "short">("long")
-  const [size, setSize] = useState("")
-  const [leverage, setLeverage] = useState([5])
-
-  const currentPrice = 2534.82
-  const priceChange = "+2.45%"
-  const high24h = 2589.00
-  const low24h = 2478.50
-
   return (
     <PageLayout minimalFooter>
-      <div className="py-12 px-4">
-        <div className="mx-auto max-w-7xl">
-          {/* Phase 2 Banner */}
-          <Alert className="mb-4 border-primary/50 bg-primary/10">
-            <Clock className="h-4 w-4 text-primary" />
-            <AlertDescription className="text-foreground">
-              <span className="font-semibold">Phase 2 Feature</span> - Perpetual trading is coming soon. This interface is a preview of the upcoming functionality.
-            </AlertDescription>
-          </Alert>
+      <div className="py-8 px-4 sm:px-6">
+        <div className="mx-auto max-w-7xl space-y-4">
 
-          {/* Simulation disclaimer */}
-          <Alert className="mb-6 border-yellow-500/50 bg-yellow-500/10">
-            <AlertTriangle className="h-4 w-4 text-yellow-500" />
-            <AlertDescription className="text-yellow-400">
-              <span className="font-semibold">Simulated trading only.</span> No real funds are involved. All positions, P&amp;L, and prices shown here are for demonstration purposes and do not represent real trades or financial activity.
-            </AlertDescription>
-          </Alert>
+          {/* ── Mandatory simulation disclaimer -- rendered server-side ── */}
+          <SimulationBanner />
 
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-foreground">Perpetual Trading</h1>
-            <p className="text-muted-foreground mt-1">Trade perpetual contracts with leverage</p>
+          {/* ── Phase 2 notice ── */}
+          <div className="flex items-start gap-3 rounded-md border border-zinc-700/50 bg-zinc-800/30 px-4 py-3">
+            <Clock className="h-4 w-4 shrink-0 mt-0.5 text-zinc-500" strokeWidth={1.5} />
+            <p className="text-sm text-zinc-400">
+              <strong className="text-zinc-300 font-medium">Phase 2 feature.</strong>{' '}
+              Perpetual trading is not available in the current release.
+              The interface below is a non-functional preview. No orders can be placed.
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Left Column: Market Info + Chart */}
-            <div className="lg:col-span-2 space-y-6">
-              {/* Market Header */}
-              <Card className="bg-card border-border">
-                <CardContent className="pt-6">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                      <Badge variant="secondary" className="text-base px-3 py-1">ETH-PERP</Badge>
-                      <span className="text-2xl font-bold">${currentPrice.toLocaleString()}</span>
-                      <Badge className="bg-green-500/10 text-green-500 hover:bg-green-500/20">
-                        {priceChange}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center gap-6 text-sm">
-                      <div>
-                        <span className="text-muted-foreground">24h High</span>
-                        <p className="font-medium text-green-500">${high24h.toLocaleString()}</p>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">24h Low</span>
-                        <p className="font-medium text-red-500">${low24h.toLocaleString()}</p>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+          {/* ── Page header ── */}
+          <div className="flex items-center gap-3">
+            <SectionHeader title="Perpetual Trading" as="h1" />
+            <StatusBadge variant="simulation" />
+          </div>
 
-              {/* Chart Placeholder */}
-              <Card className="bg-card border-border">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <BarChart3 className="h-5 w-5 text-primary" />
-                    Price Chart
-                  </CardTitle>
-                  <CardDescription>TradingView integration coming in Phase 2</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-[300px] rounded-lg bg-secondary/30 flex items-center justify-center">
-                    <div className="text-center">
-                      <BarChart3 className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-                      <p className="text-muted-foreground">Chart will be available in Phase 2</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+          {/* ── Market strip ── */}
+          <div className="rounded-xl border border-border bg-card px-5 py-4">
+            <div className="flex flex-wrap items-center gap-x-8 gap-y-4">
+              {/* Pair + price */}
+              <div className="flex items-center gap-3 min-w-0">
+                <span className="font-mono text-sm font-medium text-zinc-400 tracking-wide">
+                  {DEMO_MARKET.pair}
+                  <span className="ml-2 text-[11px] text-zinc-600">(Demo)</span>
+                </span>
+                <span className="font-data text-2xl font-semibold text-foreground">
+                  ${DEMO_MARKET.price}
+                </span>
+                <span
+                  className={`flex items-center gap-1 text-sm font-data font-medium ${
+                    DEMO_MARKET.changePositive ? 'text-emerald-400' : 'text-red-400'
+                  }`}
+                >
+                  {DEMO_MARKET.changePositive
+                    ? <TrendingUp className="h-3.5 w-3.5" strokeWidth={1.5} />
+                    : <TrendingDown className="h-3.5 w-3.5" strokeWidth={1.5} />}
+                  {DEMO_MARKET.change}
+                </span>
+              </div>
 
-              {/* Positions & Orders */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Positions Card */}
-                <Card className="bg-card border-border">
-                  <CardHeader>
-                    <CardTitle>Positions</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-center py-8 text-muted-foreground">
-                      <p>No open positions</p>
-                      <p className="text-sm mt-1">Trading available in Phase 2</p>
-                    </div>
-                  </CardContent>
-                </Card>
+              {/* Stats */}
+              <div className="flex flex-wrap items-center gap-6 ml-auto">
+                <MarketStat label="24h High" value={`$${DEMO_MARKET.high24h}`} positive={true} />
+                <MarketStat label="24h Low" value={`$${DEMO_MARKET.low24h}`} positive={false} />
+                <MarketStat label="24h Volume" value={`$${DEMO_MARKET.volume24h}`} />
+                <MarketStat label="Open Interest" value={`$${DEMO_MARKET.openInterest}`} />
+              </div>
+            </div>
+          </div>
 
-                {/* Orders Card */}
-                <Card className="bg-card border-border">
-                  <CardHeader>
-                    <CardTitle>Open Orders</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-center py-8 text-muted-foreground">
-                      <p>No open orders</p>
-                      <p className="text-sm mt-1">Trading available in Phase 2</p>
-                    </div>
-                  </CardContent>
-                </Card>
+          {/* ── Main content grid ── */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+            {/* Left: chart + tables */}
+            <div className="lg:col-span-2 space-y-4">
+              <ChartPlaceholder />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <PositionsTable title="Open Positions" />
+                <PositionsTable title="Open Orders" />
               </div>
             </div>
 
-            {/* Right Column: Place Order */}
+            {/* Right: order panel (disabled) */}
             <div className="lg:col-span-1">
-              <Card className="bg-card border-border">
-                <CardHeader>
-                  <CardTitle>Place Order</CardTitle>
-                  <CardDescription>Open a new position</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  {/* Long / Short Toggle */}
-                  <ToggleGroup
-                    type="single"
-                    value={orderType}
-                    onValueChange={(v) => v && setOrderType(v as "long" | "short")}
-                    className="w-full"
-                  >
-                    <ToggleGroupItem
-                      value="long"
-                      className="flex-1 data-[state=on]:bg-green-500/20 data-[state=on]:text-green-500"
-                    >
-                      <TrendingUp className="h-4 w-4 mr-2" />
-                      Long
-                    </ToggleGroupItem>
-                    <ToggleGroupItem
-                      value="short"
-                      className="flex-1 data-[state=on]:bg-red-500/20 data-[state=on]:text-red-500"
-                    >
-                      <TrendingDown className="h-4 w-4 mr-2" />
-                      Short
-                    </ToggleGroupItem>
-                  </ToggleGroup>
-
-                  {/* Size Input */}
-                  <div className="space-y-2">
-                    <Label>Size (USDC)</Label>
-                    <Input
-                      type="text"
-                      placeholder="0.0"
-                      value={size}
-                      onChange={(e) => setSize(e.target.value)}
-                      disabled
-                    />
-                  </div>
-
-                  {/* Leverage Slider */}
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <Label>Leverage</Label>
-                      <span className="text-sm font-medium">{leverage[0]}x</span>
-                    </div>
-                    <Slider
-                      value={leverage}
-                      onValueChange={setLeverage}
-                      min={1}
-                      max={20}
-                      step={1}
-                      disabled
-                    />
-                    <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>1x</span>
-                      <span>20x</span>
-                    </div>
-                  </div>
-
-                  {/* Order Summary */}
-                  <div className="rounded-lg bg-secondary/30 p-4 space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Entry Price</span>
-                      <span>${currentPrice.toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Liquidation Price</span>
-                      <span>-</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Fee</span>
-                      <span>0.1%</span>
-                    </div>
-                  </div>
-
-                  {/* Phase 2 Notice */}
-                  <div className="rounded-lg bg-primary/10 border border-primary/20 p-3 flex items-start gap-2">
-                    <AlertTriangle className="h-4 w-4 text-primary mt-0.5" />
-                    <p className="text-xs text-muted-foreground">
-                      Perpetual trading will be enabled in Phase 2. This interface is ready for future integration.
-                    </p>
-                  </div>
-
-                  {/* Action Button */}
-                  <Button
-                    className={`w-full ${orderType === "long" ? "bg-green-500 hover:bg-green-600" : "bg-red-500 hover:bg-red-600"} text-white`}
-                    disabled
-                  >
-                    {orderType === "long" ? "Open Long" : "Open Short"} (Coming Soon)
-                  </Button>
-                </CardContent>
-              </Card>
+              <PerpetualOrderPanel />
             </div>
+          </div>
+
+          {/* ── Disclaimer footer strip ── */}
+          <div className="rounded-md border border-yellow-500/20 bg-yellow-500/3 px-4 py-3">
+            <p className="text-xs text-yellow-600 leading-relaxed">
+              All prices, positions, P&amp;L, and market data shown on this page are for
+              demonstration purposes only. They do not represent real market conditions,
+              real trades, or any financial activity. No real funds are involved.
+              Perpetual trading is a planned Phase 2 feature and is not currently available.
+            </p>
           </div>
         </div>
       </div>

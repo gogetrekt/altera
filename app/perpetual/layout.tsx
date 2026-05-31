@@ -1,8 +1,9 @@
-import type { Metadata } from "next"
+import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: "Perpetual Trading | Altera",
-  description: "Simulated perpetual trading interface coming in Phase 2. No real funds involved. Preview only.",
+  title: 'Perpetual Trading',
+  description:
+    'Simulated perpetual trading interface. Phase 2 feature. No real funds involved. All data is for demonstration only.',
 }
 
 export default function PerpetualLayout({ children }: { children: React.ReactNode }) {

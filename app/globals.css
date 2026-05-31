@@ -12,77 +12,77 @@
 
 :root {
   /* ── Background system ── */
-  --background:         oklch(0.07 0.006 255);    /* deep navy-black */
-  --foreground:         oklch(0.92 0.004 248);    /* near-white, cool cast */
+  --background:         oklch(0.12 0.007 248);    /* dark graphite-navy, not pitch black */
+  --foreground:         oklch(0.88 0.004 248);    /* soft near-white, cool cast */
 
   /* ── Surface depth scale ── */
-  --surface-1:          oklch(0.11 0.009 248);    /* panel surface */
-  --surface-2:          oklch(0.14 0.009 248);    /* elevated panel */
-  --surface-3:          oklch(0.18 0.008 248);    /* active / selected */
-  --surface-overlay:    oklch(0.11 0.009 248 / 0.85); /* popover / dropdown */
+  --surface-1:          oklch(0.16 0.008 248);    /* panel surface */
+  --surface-2:          oklch(0.19 0.008 248);    /* elevated panel */
+  --surface-3:          oklch(0.23 0.007 248);    /* active / selected */
+  --surface-overlay:    oklch(0.16 0.008 248 / 0.90); /* popover / dropdown */
 
   /* ── Card (maps to surface-1 for shadcn compat) ── */
-  --card:               oklch(0.11 0.009 248);
-  --card-foreground:    oklch(0.92 0.004 248);
-  --popover:            oklch(0.14 0.009 248);
-  --popover-foreground: oklch(0.92 0.004 248);
+  --card:               oklch(0.16 0.008 248);
+  --card-foreground:    oklch(0.88 0.004 248);
+  --popover:            oklch(0.19 0.008 248);
+  --popover-foreground: oklch(0.88 0.004 248);
 
-  /* ── Primary — cobalt-cyan (interactive / action states only) ── */
-  --primary:            oklch(0.72 0.17 210);
-  --primary-foreground: oklch(0.07 0.006 255);    /* dark on cobalt */
+  /* ── Primary — steel-cobalt (softened chroma, readable not neon) ── */
+  --primary:            oklch(0.68 0.13 215);
+  --primary-foreground: oklch(0.97 0.002 248);    /* near-white on cobalt */
 
   /* ── Secondary — dim surface ── */
-  --secondary:          oklch(0.15 0.008 248);
-  --secondary-foreground: oklch(0.72 0.004 248);
+  --secondary:          oklch(0.20 0.007 248);
+  --secondary-foreground: oklch(0.70 0.004 248);
 
   /* ── Muted ── */
-  --muted:              oklch(0.14 0.007 248);
-  --muted-foreground:   oklch(0.52 0.006 248);
+  --muted:              oklch(0.18 0.007 248);
+  --muted-foreground:   oklch(0.55 0.005 248);
 
   /* ── Accent — same as primary for shadcn compat ── */
-  --accent:             oklch(0.72 0.17 210);
-  --accent-foreground:  oklch(0.07 0.006 255);
+  --accent:             oklch(0.68 0.13 215);
+  --accent-foreground:  oklch(0.97 0.002 248);
 
   /* ── Semantic ── */
-  --destructive:        oklch(0.56 0.21 16);      /* error / danger */
-  --destructive-foreground: oklch(0.98 0 0);
-  --success:            oklch(0.70 0.18 155);      /* confirmed / live */
-  --success-foreground: oklch(0.07 0 0);
+  --destructive:        oklch(0.55 0.18 16);      /* error / danger */
+  --destructive-foreground: oklch(0.97 0 0);
+  --success:            oklch(0.66 0.15 155);      /* confirmed / live */
+  --success-foreground: oklch(0.10 0 0);
 
   /* WARNING: amber is a risk signal only. Never a brand color. */
-  --warning:            oklch(0.80 0.16 78);       /* caution / real-ETH / unaudited */
-  --warning-foreground: oklch(0.10 0.008 240);
+  --warning:            oklch(0.76 0.14 72);       /* caution / real-ETH / unaudited */
+  --warning-foreground: oklch(0.12 0.008 240);
 
   /* Simulation — violet, reserved for perpetual / sim-only features */
-  --simulation:         oklch(0.72 0.14 290);
-  --simulation-foreground: oklch(0.07 0 0);
+  --simulation:         oklch(0.68 0.11 285);
+  --simulation-foreground: oklch(0.10 0 0);
 
   /* ── Structure ── */
-  --border:             oklch(0.22 0.006 248);
-  --border-subtle:      oklch(0.17 0.005 248);
-  --border-strong:      oklch(0.30 0.008 248);
-  --input:              oklch(0.14 0.007 248);
-  --ring:               oklch(0.72 0.17 210);      /* focus ring = cobalt */
+  --border:             oklch(0.26 0.005 248);
+  --border-subtle:      oklch(0.21 0.005 248);
+  --border-strong:      oklch(0.34 0.006 248);
+  --input:              oklch(0.19 0.007 248);
+  --ring:               oklch(0.68 0.13 215);      /* focus ring = cobalt */
 
   /* ── Charts ── */
-  --chart-1:            oklch(0.72 0.17 210);      /* cobalt */
-  --chart-2:            oklch(0.70 0.18 155);      /* green */
-  --chart-3:            oklch(0.56 0.21 16);       /* red */
-  --chart-4:            oklch(0.80 0.16 78);       /* amber (warning use only) */
-  --chart-5:            oklch(0.72 0.14 290);      /* violet */
+  --chart-1:            oklch(0.68 0.13 215);      /* cobalt */
+  --chart-2:            oklch(0.66 0.15 155);      /* green */
+  --chart-3:            oklch(0.55 0.18 16);       /* red */
+  --chart-4:            oklch(0.76 0.14 72);       /* amber (warning use only) */
+  --chart-5:            oklch(0.68 0.11 285);      /* violet */
 
   /* ── Radius — precision, not ornamental ── */
   --radius: 0.375rem;   /* 6px */
 
   /* ── Sidebar (shadcn compat) ── */
-  --sidebar:                        oklch(0.11 0.009 248);
-  --sidebar-foreground:             oklch(0.92 0.004 248);
-  --sidebar-primary:                oklch(0.72 0.17 210);
-  --sidebar-primary-foreground:     oklch(0.07 0.006 255);
-  --sidebar-accent:                 oklch(0.15 0.008 248);
-  --sidebar-accent-foreground:      oklch(0.92 0.004 248);
-  --sidebar-border:                 oklch(0.22 0.006 248);
-  --sidebar-ring:                   oklch(0.72 0.17 210);
+  --sidebar:                        oklch(0.16 0.008 248);
+  --sidebar-foreground:             oklch(0.88 0.004 248);
+  --sidebar-primary:                oklch(0.68 0.13 215);
+  --sidebar-primary-foreground:     oklch(0.97 0.002 248);
+  --sidebar-accent:                 oklch(0.20 0.007 248);
+  --sidebar-accent-foreground:      oklch(0.88 0.004 248);
+  --sidebar-border:                 oklch(0.26 0.005 248);
+  --sidebar-ring:                   oklch(0.68 0.13 215);
 }
 
 @theme inline {
@@ -148,15 +148,14 @@
   }
 
   html {
-    /* Dot grid: precision lattice substrate at 3% opacity */
+    /* Dot grid: very subtle precision lattice — texture, not pattern */
     background-color: var(--background);
     background-image: radial-gradient(
       circle,
-      oklch(0.32 0.008 248 / 0.55) 1px,
+      oklch(0.38 0.006 248 / 0.28) 1px,
       transparent 1px
     );
     background-size: 24px 24px;
-    /* Subtle radial light source: top-center */
     background-attachment: fixed;
   }
 
@@ -164,10 +163,10 @@
     @apply text-foreground font-sans antialiased;
     /* Body is transparent so html dot grid shows through */
     background: transparent;
-    /* Top-center ambient light impression */
+    /* Soft top-center ambient, barely perceptible */
     background-image: radial-gradient(
-      ellipse 80% 40% at 50% -10%,
-      oklch(0.14 0.014 240 / 0.5),
+      ellipse 70% 35% at 50% -5%,
+      oklch(0.22 0.010 230 / 0.35),
       transparent
     );
     background-attachment: fixed;
@@ -182,11 +181,11 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: oklch(0.28 0.006 248);
+    background: oklch(0.32 0.005 248);
     border-radius: 3px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: oklch(0.36 0.008 248);
+    background: oklch(0.40 0.006 248);
   }
 
   /* Focus ring — cobalt */
@@ -225,8 +224,8 @@
   /* ── Cobalt glow — focus and primary CTA only, never decorative ── */
   .glow-cobalt {
     box-shadow:
-      0 0 0 1px oklch(0.72 0.17 210 / 0.25),
-      0 4px 20px -4px oklch(0.72 0.17 210 / 0.18);
+      0 0 0 1px oklch(0.68 0.13 215 / 0.18),
+      0 4px 16px -4px oklch(0.68 0.13 215 / 0.10);
   }
 
   /* ── Status color utilities ── */
@@ -240,9 +239,9 @@
   .skeleton-shimmer {
     background: linear-gradient(
       90deg,
-      oklch(0.14 0.007 248) 25%,
-      oklch(0.19 0.008 248) 50%,
-      oklch(0.14 0.007 248) 75%
+      oklch(0.19 0.007 248) 25%,
+      oklch(0.24 0.007 248) 50%,
+      oklch(0.19 0.007 248) 75%
     );
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite;

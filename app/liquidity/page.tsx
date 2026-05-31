@@ -1,19 +1,23 @@
-"use client"
+'use client'
 
-import { useState, useEffect, useCallback } from "react"
-import { Plus, Minus, Info, Wallet, X, Loader2, TriangleAlert } from "lucide-react"
-import { toast } from "sonner"
-import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt, useBalance, usePublicClient } from "wagmi"
-import { parseUnits, formatUnits } from "viem"
-import { sepolia } from "viem/chains"
-import { PageLayout } from "@/components/page-layout"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Alert, AlertDescription } from "@/components/ui/alert"
+import { useState, useEffect, useCallback } from 'react'
+import { Plus, Info, Wallet, X, Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
+import {
+  useAccount,
+  useReadContract,
+  useWriteContract,
+  useWaitForTransactionReceipt,
+  useBalance,
+  usePublicClient,
+} from 'wagmi'
+import { parseUnits, formatUnits } from 'viem'
+import { sepolia } from 'viem/chains'
+import { PageLayout } from '@/components/page-layout'
+import { NetworkGuardBanner } from '@/components/ui/network-guard-banner'
+import { StatusBadge } from '@/components/ui/status-badge'
+import { SectionHeader } from '@/components/ui/section-header'
+import { cn } from '@/lib/utils'
 import {
   TOKEN_ADDRESSES,
   TOKEN_DECIMALS,
@@ -25,9 +29,8 @@ import {
   POSITION_MANAGER_ABI,
   MIN_TICK,
   MAX_TICK,
-} from "@/lib/uniswap-config"
+} from '@/lib/uniswap-config'
 
-// Position type
 interface Position {
   tokenId: bigint
   liquidity: bigint
@@ -40,44 +43,89 @@ interface Position {
   tokensOwed1: bigint
 }
 
-// Helper to format amounts nicely
 function formatAmount(value: bigint, decimals: number, maxDecimals = 6): string {
   const formatted = formatUnits(value, decimals)
   const num = parseFloat(formatted)
-  if (num === 0) return "0"
-  if (num < 0.000001) return "<0.000001"
+  if (num === 0) return '0'
+  if (num < 0.000001) return '<0.000001'
   return num.toLocaleString(undefined, { maximumFractionDigits: maxDecimals })
 }
 
-// Default slippage tolerance: 0.5%
-// Amounts are reduced by this factor before passing as on-chain minimums.
-const SLIPPAGE_BPS = 50n // 50 basis points = 0.5%
+const SLIPPAGE_BPS = 50n
 const BPS_DENOMINATOR = 10000n
 
 function applySlippage(amount: bigint): bigint {
   return (amount * (BPS_DENOMINATOR - SLIPPAGE_BPS)) / BPS_DENOMINATOR
 }
 
+// ─── Amount input ─────────────────────────────────────────────────────────────
+
+function LiquidityInput({
+  label,
+  value,
+  onChange,
+  onMax,
+  balanceLabel,
+  approvalNote,
+}: {
+  label: string
+  value: string
+  onChange: (v: string) => void
+  onMax: () => void
+  balanceLabel: string
+  approvalNote?: boolean
+}) {
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-center justify-between">
+        <label className="text-xs font-medium text-muted-foreground">{label}</label>
+        <span className="text-xs text-muted-foreground">{balanceLabel}</span>
+      </div>
+      <div className="flex gap-2">
+        <input
+          type="text"
+          inputMode="decimal"
+          placeholder="0.0"
+          value={value}
+          onChange={e => onChange(e.target.value)}
+          className="flex-1 h-10 rounded-md border border-border bg-surface-2 px-3 text-sm font-data text-foreground placeholder:text-muted-foreground/30 focus:outline-none focus-visible:ring-1 focus-visible:ring-ring transition-colors duration-150"
+        />
+        <button
+          type="button"
+          onClick={onMax}
+          className="px-3 h-10 rounded-md border border-border bg-surface-3 text-xs font-mono text-muted-foreground hover:text-foreground hover:bg-surface-3/80 transition-colors duration-150 cursor-pointer shrink-0"
+        >
+          Max
+        </button>
+      </div>
+      {approvalNote && (
+        <p className="text-[11px] text-warning/80 font-mono">Approval required</p>
+      )}
+    </div>
+  )
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
+
 export default function LiquidityPage() {
   const { address, isConnected, chain } = useAccount()
   const isOnSepolia = !chain || chain.id === sepolia.id
   const publicClient = usePublicClient()
-  const [dethAmount, setDethAmount] = useState("")
-  const [dusdcAmount, setDusdcAmount] = useState("")
+  const [dethAmount, setDethAmount] = useState('')
+  const [dusdcAmount, setDusdcAmount] = useState('')
   const [positions, setPositions] = useState<Position[]>([])
   const [loadingPositions, setLoadingPositions] = useState(false)
   const [closingPositionId, setClosingPositionId] = useState<bigint | null>(null)
   const [isClosingPosition, setIsClosingPosition] = useState(false)
   const [pendingCollectTokenId, setPendingCollectTokenId] = useState<bigint | null>(null)
 
-  // Token balances
   const { data: dethBalance } = useBalance({
     address,
     token: TOKEN_ADDRESSES.dETH as `0x${string}`,
     chainId: sepolia.id,
     query: { enabled: !!address },
   })
-  
+
   const { data: dusdcBalance } = useBalance({
     address,
     token: TOKEN_ADDRESSES.dUSDC as `0x${string}`,
@@ -85,7 +133,6 @@ export default function LiquidityPage() {
     query: { enabled: !!address },
   })
 
-  // Pool slot0 for current price
   const { data: slot0 } = useReadContract({
     address: POOL_ADDRESS as `0x${string}`,
     abi: POOL_ABI,
@@ -93,7 +140,6 @@ export default function LiquidityPage() {
     chainId: sepolia.id,
   })
 
-  // Token order in pool
   const { data: token0Address } = useReadContract({
     address: POOL_ADDRESS as `0x${string}`,
     abi: POOL_ABI,
@@ -101,7 +147,6 @@ export default function LiquidityPage() {
     chainId: sepolia.id,
   })
 
-  // Allowances
   const { data: dethAllowance, refetch: refetchDethAllowance } = useReadContract({
     address: TOKEN_ADDRESSES.dETH as `0x${string}`,
     abi: ERC20_ABI,
@@ -120,7 +165,6 @@ export default function LiquidityPage() {
     query: { enabled: !!address },
   })
 
-  // User's LP position count
   const { data: positionCount, refetch: refetchPositionCount } = useReadContract({
     address: NONFUNGIBLE_POSITION_MANAGER as `0x${string}`,
     abi: POSITION_MANAGER_ABI,
@@ -128,36 +172,31 @@ export default function LiquidityPage() {
     args: address ? [address] : undefined,
   })
 
-  // Fetch all user positions
   const fetchPositions = useCallback(async () => {
     if (!address || !publicClient || !positionCount || positionCount === 0n) {
       setPositions([])
       return
     }
-
     setLoadingPositions(true)
     try {
       const positionPromises: Promise<Position | null>[] = []
-      
       for (let i = 0n; i < positionCount; i++) {
         positionPromises.push(
           (async () => {
             try {
-              // Get token ID
               const tokenId = await publicClient.readContract({
                 address: NONFUNGIBLE_POSITION_MANAGER as `0x${string}`,
                 abi: POSITION_MANAGER_ABI,
                 functionName: 'tokenOfOwnerByIndex',
                 args: [address, i],
-              } as any) as bigint
+              } as Parameters<typeof publicClient.readContract>[0]) as bigint
 
-              // Get position details
               const positionData = await publicClient.readContract({
                 address: NONFUNGIBLE_POSITION_MANAGER as `0x${string}`,
                 abi: POSITION_MANAGER_ABI,
                 functionName: 'positions',
                 args: [tokenId],
-              } as any) as readonly [bigint, `0x${string}`, `0x${string}`, `0x${string}`, number, number, number, bigint, bigint, bigint, bigint, bigint]
+              } as Parameters<typeof publicClient.readContract>[0]) as readonly [bigint, `0x${string}`, `0x${string}`, `0x${string}`, number, number, number, bigint, bigint, bigint, bigint, bigint]
 
               return {
                 tokenId,
@@ -170,15 +209,12 @@ export default function LiquidityPage() {
                 tokensOwed0: positionData[10],
                 tokensOwed1: positionData[11],
               }
-            } catch {
-              return null
-            }
-          })()
+            } catch { return null }
+          })(),
         )
       }
-
-      const fetchedPositions = (await Promise.all(positionPromises)).filter((p): p is Position => p !== null)
-      setPositions(fetchedPositions)
+      const fetched = (await Promise.all(positionPromises)).filter((p): p is Position => p !== null)
+      setPositions(fetched)
     } catch (error) {
       console.error('Error fetching positions:', error)
     } finally {
@@ -186,64 +222,43 @@ export default function LiquidityPage() {
     }
   }, [address, publicClient, positionCount])
 
-  // Fetch positions when positionCount changes
-  useEffect(() => {
-    fetchPositions()
-  }, [fetchPositions])
+  useEffect(() => { fetchPositions() }, [fetchPositions])
 
-  // Write contract hooks
   const { writeContract, data: txHash, isPending, reset } = useWriteContract()
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash: txHash })
 
-  // Calculate current price using BigInt to avoid precision loss on sqrtPriceX96
   const currentPrice = (() => {
     if (!slot0 || !token0Address) return 0
     const sqrtPriceX96 = slot0[0] as bigint
     const Q192 = 2n ** 192n
-    const DECIMAL_ADJUST = 10n ** 12n // dETH (18 dec) / dUSDC (6 dec)
+    const DECIMAL_ADJUST = 10n ** 12n
     const isDethToken0 = token0Address.toLowerCase() === TOKEN_ADDRESSES.dETH.toLowerCase()
     const priceRaw = (sqrtPriceX96 * sqrtPriceX96 * DECIMAL_ADJUST) / Q192
-    if (isDethToken0) {
-      return Number(priceRaw)
-    } else {
-      return priceRaw > 0n ? Number(DECIMAL_ADJUST * DECIMAL_ADJUST) / Number(priceRaw) : 0
-    }
+    if (isDethToken0) return Number(priceRaw)
+    return priceRaw > 0n ? Number(DECIMAL_ADJUST * DECIMAL_ADJUST) / Number(priceRaw) : 0
   })()
 
-  // Determine token order
   const isDethToken0 = token0Address?.toLowerCase() === TOKEN_ADDRESSES.dETH.toLowerCase()
 
-  // Auto-calculate paired amount based on current price
   const handleDethChange = (value: string) => {
     setDethAmount(value)
-    if (value && !Number.isNaN(Number.parseFloat(value)) && currentPrice > 0) {
+    if (value && !Number.isNaN(Number.parseFloat(value)) && currentPrice > 0)
       setDusdcAmount((Number.parseFloat(value) * currentPrice).toFixed(2))
-    } else {
-      setDusdcAmount("")
-    }
+    else setDusdcAmount('')
   }
 
   const handleDusdcChange = (value: string) => {
     setDusdcAmount(value)
-    if (value && !Number.isNaN(Number.parseFloat(value)) && currentPrice > 0) {
+    if (value && !Number.isNaN(Number.parseFloat(value)) && currentPrice > 0)
       setDethAmount((Number.parseFloat(value) / currentPrice).toFixed(6))
-    } else {
-      setDethAmount("")
-    }
+    else setDethAmount('')
   }
 
-  // Refetch on success
   useEffect(() => {
     if (isSuccess) {
-      // Dismiss all loading toasts
-      toast.dismiss("approve")
-      toast.dismiss("add-liquidity")
-      toast.dismiss("close-position")
-      toast.dismiss("collect")
-      
-      // If we just finished decreaseLiquidity, now collect
+      toast.dismiss('approve'); toast.dismiss('add-liquidity'); toast.dismiss('close-position'); toast.dismiss('collect')
+
       if (pendingCollectTokenId !== null) {
-        // Auto collect after decreaseLiquidity
         writeContract({
           address: NONFUNGIBLE_POSITION_MANAGER as `0x${string}`,
           abi: POSITION_MANAGER_ABI,
@@ -257,396 +272,305 @@ export default function LiquidityPage() {
           chain: sepolia,
           account: address,
         })
-        toast.loading("Collecting tokens...", { id: "collect" })
+        toast.loading('Collecting tokens...', { id: 'collect' })
         setPendingCollectTokenId(null)
         return
       }
-      
-      // If we were closing a position, now it's done
+
       if (isClosingPosition) {
-        toast.success("Position closed successfully!")
+        toast.success('Position closed successfully!')
         setIsClosingPosition(false)
         setClosingPositionId(null)
       } else {
-        toast.success("Transaction confirmed!")
+        toast.success('Transaction confirmed!')
       }
-      
-      refetchDethAllowance()
-      refetchDusdcAllowance()
-      refetchPositionCount()
-      // Reset write contract state to clear processing state
-      reset()
-      setDethAmount("")
-      setDusdcAmount("")
-      // Refetch positions after a short delay to allow chain to update
-      setTimeout(() => {
-        fetchPositions()
-      }, 2000)
+
+      refetchDethAllowance(); refetchDusdcAllowance(); refetchPositionCount()
+      reset(); setDethAmount(''); setDusdcAmount('')
+      setTimeout(() => { fetchPositions() }, 2000)
     }
   }, [isSuccess, reset, fetchPositions, pendingCollectTokenId, isClosingPosition, address])
 
-  // Check if approval needed
   const dethAmountBN = dethAmount ? parseUnits(dethAmount, TOKEN_DECIMALS.dETH) : 0n
   const dusdcAmountBN = dusdcAmount ? parseUnits(dusdcAmount, TOKEN_DECIMALS.dUSDC) : 0n
-  
   const needsDethApproval = dethAmountBN > 0n && (dethAllowance ?? 0n) < dethAmountBN
   const needsDusdcApproval = dusdcAmountBN > 0n && (dusdcAllowance ?? 0n) < dusdcAmountBN
 
-  // Approve dETH
   const handleApproveDeth = () => {
-    writeContract({
-      address: TOKEN_ADDRESSES.dETH as `0x${string}`,
-      abi: ERC20_ABI,
-      functionName: 'approve',
-      args: [NONFUNGIBLE_POSITION_MANAGER as `0x${string}`, dethAmountBN],
-      chain: sepolia,
-      account: address,
-    })
-    toast.loading("Approving dETH...", { id: "approve" })
+    writeContract({ address: TOKEN_ADDRESSES.dETH as `0x${string}`, abi: ERC20_ABI, functionName: 'approve', args: [NONFUNGIBLE_POSITION_MANAGER as `0x${string}`, dethAmountBN], chain: sepolia, account: address })
+    toast.loading('Approving dETH...', { id: 'approve' })
   }
 
-  // Approve dUSDC
   const handleApproveDusdc = () => {
-    writeContract({
-      address: TOKEN_ADDRESSES.dUSDC as `0x${string}`,
-      abi: ERC20_ABI,
-      functionName: 'approve',
-      args: [NONFUNGIBLE_POSITION_MANAGER as `0x${string}`, dusdcAmountBN],
-      chain: sepolia,
-      account: address,
-    })
-    toast.loading("Approving dUSDC...", { id: "approve" })
+    writeContract({ address: TOKEN_ADDRESSES.dUSDC as `0x${string}`, abi: ERC20_ABI, functionName: 'approve', args: [NONFUNGIBLE_POSITION_MANAGER as `0x${string}`, dusdcAmountBN], chain: sepolia, account: address })
+    toast.loading('Approving dUSDC...', { id: 'approve' })
   }
 
-  // Add liquidity (mint new position)
   const handleAddLiquidity = () => {
     if (!address || dethAmountBN === 0n || dusdcAmountBN === 0n) return
-
-    // Determine token order for mint params
     const amount0Desired = isDethToken0 ? dethAmountBN : dusdcAmountBN
     const amount1Desired = isDethToken0 ? dusdcAmountBN : dethAmountBN
     const token0 = isDethToken0 ? TOKEN_ADDRESSES.dETH : TOKEN_ADDRESSES.dUSDC
     const token1 = isDethToken0 ? TOKEN_ADDRESSES.dUSDC : TOKEN_ADDRESSES.dETH
-
     writeContract({
-      address: NONFUNGIBLE_POSITION_MANAGER as `0x${string}`,
-      abi: POSITION_MANAGER_ABI,
-      functionName: 'mint',
+      address: NONFUNGIBLE_POSITION_MANAGER as `0x${string}`, abi: POSITION_MANAGER_ABI, functionName: 'mint',
       args: [{
-        token0: token0 as `0x${string}`,
-        token1: token1 as `0x${string}`,
-        fee: POOL_FEE,
-        tickLower: MIN_TICK,
-        tickUpper: MAX_TICK,
-        amount0Desired,
-        amount1Desired,
-        amount0Min: applySlippage(amount0Desired),
-        amount1Min: applySlippage(amount1Desired),
-        recipient: address,
-        deadline: BigInt(Math.floor(Date.now() / 1000) + 1800), // 30 min
+        token0: token0 as `0x${string}`, token1: token1 as `0x${string}`, fee: POOL_FEE,
+        tickLower: MIN_TICK, tickUpper: MAX_TICK, amount0Desired, amount1Desired,
+        amount0Min: applySlippage(amount0Desired), amount1Min: applySlippage(amount1Desired),
+        recipient: address, deadline: BigInt(Math.floor(Date.now() / 1000) + 1800),
       }],
-      chain: sepolia,
-      account: address,
+      chain: sepolia, account: address,
     })
-    toast.loading("Adding liquidity...", { id: "add-liquidity" })
+    toast.loading('Adding liquidity...', { id: 'add-liquidity' })
   }
 
-  // Close position (decrease all liquidity + collect)
   const handleClosePosition = async (position: Position) => {
     if (!address || position.liquidity === 0n) return
-
-    setClosingPositionId(position.tokenId)
-    setIsClosingPosition(true)
-    setPendingCollectTokenId(position.tokenId)
-    
+    setClosingPositionId(position.tokenId); setIsClosingPosition(true); setPendingCollectTokenId(position.tokenId)
     try {
-      // First, decrease liquidity to 0
       writeContract({
-        address: NONFUNGIBLE_POSITION_MANAGER as `0x${string}`,
-        abi: POSITION_MANAGER_ABI,
-        functionName: 'decreaseLiquidity',
-        args: [{
-          tokenId: position.tokenId,
-          liquidity: position.liquidity,
-          // amount0Min/amount1Min cannot be pre-computed exactly without tick math.
-          // Setting 1n prevents a full-drain sandwich (vs 0n) until tick-math calculation is added.
-          amount0Min: 1n,
-          amount1Min: 1n,
-          deadline: BigInt(Math.floor(Date.now() / 1000) + 1800),
-        }],
-        chain: sepolia,
-        account: address,
+        address: NONFUNGIBLE_POSITION_MANAGER as `0x${string}`, abi: POSITION_MANAGER_ABI, functionName: 'decreaseLiquidity',
+        args: [{ tokenId: position.tokenId, liquidity: position.liquidity, amount0Min: 1n, amount1Min: 1n, deadline: BigInt(Math.floor(Date.now() / 1000) + 1800) }],
+        chain: sepolia, account: address,
       })
-      toast.loading("Removing liquidity...", { id: "close-position" })
+      toast.loading('Removing liquidity...', { id: 'close-position' })
     } catch (error) {
       console.error('Error closing position:', error)
-      toast.error("Failed to close position")
-      setClosingPositionId(null)
-      setIsClosingPosition(false)
-      setPendingCollectTokenId(null)
+      toast.error('Failed to close position')
+      setClosingPositionId(null); setIsClosingPosition(false); setPendingCollectTokenId(null)
     }
   }
 
   const isValidAmount = dethAmount && Number.parseFloat(dethAmount) > 0 && dusdcAmount && Number.parseFloat(dusdcAmount) > 0
   const isAddLiquidityLoading = (isPending || isConfirming) && !isClosingPosition
 
-  // Determine button state
-  const getButtonContent = () => {
-    if (!isConnected) return { text: "Connect Wallet", disabled: true }
-    if (!isValidAmount) return { text: "Enter amounts", disabled: true }
-    if (needsDethApproval) return { text: "Approve dETH", disabled: false, action: handleApproveDeth }
-    if (needsDusdcApproval) return { text: "Approve dUSDC", disabled: false, action: handleApproveDusdc }
-    return { text: "Add Liquidity", disabled: false, action: handleAddLiquidity }
+  const getButtonState = () => {
+    if (!isConnected) return { text: 'Connect Wallet', disabled: true, action: undefined }
+    if (!isValidAmount) return { text: 'Enter amounts', disabled: true, action: undefined }
+    if (needsDethApproval) return { text: 'Approve dETH', disabled: false, action: handleApproveDeth }
+    if (needsDusdcApproval) return { text: 'Approve dUSDC', disabled: false, action: handleApproveDusdc }
+    return { text: 'Add Liquidity', disabled: false, action: handleAddLiquidity }
   }
 
-  const buttonState = getButtonContent()
+  const buttonState = getButtonState()
+  const activePositions = positions.filter(p => p.liquidity > 0n)
 
   return (
     <PageLayout minimalFooter>
-      <div className="py-12 px-4">
+      <div className="py-12 px-4 sm:px-6">
         <div className="mx-auto max-w-6xl">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-foreground">Liquidity</h1>
-            <p className="text-muted-foreground mt-1">Provide liquidity to the dETH/dUSDC pool to earn fees</p>
+
+          {/* Header */}
+          <div className="flex items-center gap-3 mb-8 animate-fade-up">
+            <SectionHeader
+              title="Liquidity"
+              as="h1"
+              description="Provide liquidity to the dETH/dUSDC pool to earn fees"
+            />
+            <StatusBadge variant="testnet" label="Sepolia" />
           </div>
 
+          {/* Wrong network guard */}
           {isConnected && !isOnSepolia && (
-            <Alert className="mb-6 border-orange-500 bg-orange-500/10">
-              <TriangleAlert className="h-4 w-4 text-orange-500" />
-              <AlertDescription className="text-orange-400">
-                This page operates on <strong>Sepolia testnet</strong>. Your wallet is connected to a different network. Switch to Sepolia to manage liquidity.
-              </AlertDescription>
-            </Alert>
+            <div className="mb-6">
+              <NetworkGuardBanner expectedNetwork="Sepolia" isWrongNetwork={true} />
+            </div>
           )}
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Add Liquidity Card */}
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Plus className="h-5 w-5 text-primary" />
-                  Add Liquidity
-                </CardTitle>
-                <CardDescription>
-                  dETH / dUSDC Pool • 0.3% Fee Tier
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Current Price */}
-                <div className="rounded-lg bg-secondary/30 p-3">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Info className="h-4 w-4" />
-                    <span>Current Price: <span className="text-foreground font-medium">1 dETH = {currentPrice.toLocaleString(undefined, { maximumFractionDigits: 2 })} dUSDC</span></span>
-                  </div>
-                </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-fade-up stagger-1">
 
-                {/* dETH Input */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label>dETH Amount</Label>
-                    <span className="text-xs text-muted-foreground">
-                      Balance: {dethBalance ? formatAmount(dethBalance.value, 18, 4) : "0"}
-                    </span>
-                  </div>
-                  <div className="flex gap-2">
-                    <Input
-                      type="text"
-                      placeholder="0.0"
-                      value={dethAmount}
-                      onChange={(e) => handleDethChange(e.target.value)}
-                      className="flex-1"
-                    />
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => dethBalance && handleDethChange(formatUnits(dethBalance.value, 18))}
-                    >
-                      Max
-                    </Button>
-                  </div>
-                  {needsDethApproval && dethAmountBN > 0n && (
-                    <p className="text-xs text-yellow-500">Approval needed for dETH</p>
-                  )}
-                </div>
-
-                {/* dUSDC Input */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label>dUSDC Amount</Label>
-                    <span className="text-xs text-muted-foreground">
-                      Balance: {dusdcBalance ? formatAmount(dusdcBalance.value, 6, 2) : "0"}
-                    </span>
-                  </div>
-                  <div className="flex gap-2">
-                    <Input
-                      type="text"
-                      placeholder="0.0"
-                      value={dusdcAmount}
-                      onChange={(e) => handleDusdcChange(e.target.value)}
-                      className="flex-1"
-                    />
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => dusdcBalance && handleDusdcChange(formatUnits(dusdcBalance.value, 6))}
-                    >
-                      Max
-                    </Button>
-                  </div>
-                  {needsDusdcApproval && dusdcAmountBN > 0n && (
-                    <p className="text-xs text-yellow-500">Approval needed for dUSDC</p>
-                  )}
-                </div>
-
-                {/* Position Preview */}
-                {isValidAmount && (
-                  <div className="rounded-lg bg-secondary/30 p-4 space-y-3">
-                    <h4 className="text-sm font-medium">Position Preview</h4>
-                    <div className="grid grid-cols-2 gap-3 text-sm">
-                      <div>
-                        <span className="text-muted-foreground">Pair</span>
-                        <p className="font-medium">dETH/dUSDC</p>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">Fee Tier</span>
-                        <p className="font-medium">0.3%</p>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">Range</span>
-                        <p className="font-medium">Full Range</p>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">Total Value</span>
-                        <p className="font-medium">
-                          ~${((Number.parseFloat(dethAmount || "0") * currentPrice) + Number.parseFloat(dusdcAmount || "0")).toLocaleString(undefined, { maximumFractionDigits: 2 })}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                <Button
-                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
-                  onClick={buttonState.action}
-                  disabled={buttonState.disabled || isAddLiquidityLoading || isClosingPosition}
-                >
-                  {isAddLiquidityLoading ? "Processing..." : buttonState.text}
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Your Positions Card */}
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <CardTitle>Your Positions</CardTitle>
-                <CardDescription>
-                  {positions.filter(p => p.liquidity > 0n).length > 0 
-                    ? `${positions.filter(p => p.liquidity > 0n).length} active position${positions.filter(p => p.liquidity > 0n).length !== 1 ? "s" : ""}` 
-                    : "No positions yet"}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {!isConnected ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <Wallet className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p>Connect wallet to view positions</p>
-                  </div>
-                ) : loadingPositions ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <Loader2 className="h-8 w-8 mx-auto mb-4 animate-spin" />
-                    <p>Loading positions...</p>
-                  </div>
-                ) : positions.filter(p => p.liquidity > 0n).length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <p>No active positions</p>
-                    <p className="text-sm mt-1">Add liquidity to get started</p>
-                  </div>
-                ) : (
-                  <ScrollArea className="h-[400px] pr-4">
-                    <div className="space-y-3">
-                      {positions.filter(p => p.liquidity > 0n).map((position) => {
-                        const isClosing = closingPositionId === position.tokenId
-                        
-                        return (
-                          <div key={position.tokenId.toString()} className="rounded-lg bg-secondary/30 p-4 space-y-3">
-                            <div className="flex items-center justify-between">
-                              <span className="font-semibold">dETH/dUSDC</span>
-                              <div className="flex items-center gap-2">
-                                <Badge variant="secondary">{position.fee / 10000}%</Badge>
-                                <Badge variant="default">Active</Badge>
-                              </div>
-                            </div>
-                            <div className="grid grid-cols-2 gap-2 text-sm">
-                              <div>
-                                <span className="text-muted-foreground">Token ID</span>
-                                <p className="font-medium">#{position.tokenId.toString()}</p>
-                              </div>
-                              <div>
-                                <span className="text-muted-foreground">Range</span>
-                                <p className="font-medium">
-                                  {position.tickLower === MIN_TICK && position.tickUpper === MAX_TICK 
-                                    ? "Full Range" 
-                                    : `${position.tickLower} - ${position.tickUpper}`}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="flex gap-2 pt-2">
-                              <Button
-                                variant="destructive"
-                                size="sm"
-                                className="flex-1"
-                                onClick={() => handleClosePosition(position)}
-                                disabled={isClosing || isClosingPosition}
-                              >
-                                {isClosing ? (
-                                  <>
-                                    <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                                    Closing...
-                                  </>
-                                ) : (
-                                  <>
-                                    <X className="h-4 w-4 mr-1" />
-                                    Close Position
-                                  </>
-                                )}
-                              </Button>
-                            </div>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </ScrollArea>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Pool Info */}
-          <Card className="mt-6 bg-card border-border">
-            <CardHeader>
-              <CardTitle className="text-lg">Pool Information</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            {/* ── Add Liquidity ─────────────────────────────────────────────── */}
+            <div className="rounded-lg border border-border bg-surface-1">
+              <div className="flex items-center gap-2 px-5 py-4 border-b border-border">
+                <Plus className="h-4 w-4 text-muted-foreground" strokeWidth={1.5} />
                 <div>
-                  <span className="text-muted-foreground">Pool Address</span>
-                  <p className="font-mono text-xs mt-1 truncate">{POOL_ADDRESS}</p>
-                </div>
-                <div>
-                  <span className="text-muted-foreground">Fee Tier</span>
-                  <p className="font-medium mt-1">0.3%</p>
-                </div>
-                <div>
-                  <span className="text-muted-foreground">Current Price</span>
-                  <p className="font-medium mt-1">1 dETH = {currentPrice.toLocaleString(undefined, { maximumFractionDigits: 2 })} dUSDC</p>
-                </div>
-                <div>
-                  <span className="text-muted-foreground">Network</span>
-                  <p className="font-medium mt-1">Sepolia Testnet</p>
+                  <h2 className="text-sm font-semibold text-foreground">Add Liquidity</h2>
+                  <p className="text-xs text-muted-foreground mt-0.5">dETH / dUSDC Pool · 0.3% Fee Tier</p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+              <div className="px-5 py-4 space-y-4">
+
+                {/* Current price */}
+                <div className="flex items-center gap-2 rounded-md border border-border bg-surface-2 px-4 py-2.5 text-xs text-muted-foreground">
+                  <Info className="h-3.5 w-3.5 shrink-0" strokeWidth={1.5} />
+                  <span>
+                    Current Price:{' '}
+                    <span className="text-foreground font-mono">
+                      1 dETH = {currentPrice.toLocaleString(undefined, { maximumFractionDigits: 2 })} dUSDC
+                    </span>
+                  </span>
+                </div>
+
+                {/* Inputs */}
+                <LiquidityInput
+                  label="dETH Amount"
+                  value={dethAmount}
+                  onChange={handleDethChange}
+                  onMax={() => dethBalance && handleDethChange(formatUnits(dethBalance.value, 18))}
+                  balanceLabel={`Balance: ${dethBalance ? formatAmount(dethBalance.value, 18, 4) : '0'}`}
+                  approvalNote={needsDethApproval && dethAmountBN > 0n}
+                />
+                <LiquidityInput
+                  label="dUSDC Amount"
+                  value={dusdcAmount}
+                  onChange={handleDusdcChange}
+                  onMax={() => dusdcBalance && handleDusdcChange(formatUnits(dusdcBalance.value, 6))}
+                  balanceLabel={`Balance: ${dusdcBalance ? formatAmount(dusdcBalance.value, 6, 2) : '0'}`}
+                  approvalNote={needsDusdcApproval && dusdcAmountBN > 0n}
+                />
+
+                {/* Position preview */}
+                {isValidAmount && (
+                  <div className="rounded-md border border-border bg-surface-2 px-4 py-3 space-y-2.5">
+                    <p className="text-xs font-medium text-foreground">Position Preview</p>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
+                      {[
+                        { label: 'Pair', value: 'dETH/dUSDC' },
+                        { label: 'Fee Tier', value: '0.3%' },
+                        { label: 'Range', value: 'Full Range' },
+                        {
+                          label: 'Total Value',
+                          value: `~$${((Number.parseFloat(dethAmount || '0') * currentPrice) + Number.parseFloat(dusdcAmount || '0')).toLocaleString(undefined, { maximumFractionDigits: 2 })}`,
+                        },
+                      ].map(row => (
+                        <div key={row.label}>
+                          <span className="text-muted-foreground">{row.label}</span>
+                          <p className="font-data font-medium text-foreground mt-0.5">{row.value}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  onClick={buttonState.action}
+                  disabled={buttonState.disabled || isAddLiquidityLoading || isClosingPosition}
+                  className={cn(
+                    'w-full h-10 rounded-md text-sm font-semibold',
+                    'inline-flex items-center justify-center gap-2',
+                    'transition-all duration-150 cursor-pointer',
+                    !buttonState.disabled && !isAddLiquidityLoading && !isClosingPosition
+                      ? 'bg-primary hover:bg-primary/90 text-primary-foreground active:scale-[0.98]'
+                      : 'bg-surface-3 text-muted-foreground/40 cursor-not-allowed',
+                  )}
+                >
+                  {isAddLiquidityLoading && <Loader2 className="h-4 w-4 animate-spin" strokeWidth={1.5} />}
+                  {isAddLiquidityLoading ? 'Processing...' : buttonState.text}
+                </button>
+              </div>
+            </div>
+
+            {/* ── Your Positions ────────────────────────────────────────────── */}
+            <div className="rounded-lg border border-border bg-surface-1">
+              <div className="px-5 py-4 border-b border-border">
+                <h2 className="text-sm font-semibold text-foreground">Your Positions</h2>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {activePositions.length > 0
+                    ? `${activePositions.length} active position${activePositions.length !== 1 ? 's' : ''}`
+                    : 'No positions yet'}
+                </p>
+              </div>
+              <div className="px-5 py-4">
+                {!isConnected ? (
+                  <div className="flex flex-col items-center justify-center gap-3 py-10 text-center">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-3 border border-border">
+                      <Wallet className="h-5 w-5 text-muted-foreground" strokeWidth={1.5} />
+                    </div>
+                    <p className="text-sm text-muted-foreground">Connect wallet to view positions</p>
+                  </div>
+                ) : loadingPositions ? (
+                  <div className="flex flex-col items-center justify-center gap-3 py-10 text-center">
+                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" strokeWidth={1.5} />
+                    <p className="text-sm text-muted-foreground">Loading positions...</p>
+                  </div>
+                ) : activePositions.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center gap-2 py-10 text-center">
+                    <p className="text-sm text-muted-foreground">No active positions</p>
+                    <p className="text-xs text-muted-foreground/60">Add liquidity to get started</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3 max-h-100 overflow-y-auto pr-1">
+                    {activePositions.map(position => {
+                      const isClosing = closingPositionId === position.tokenId
+                      return (
+                        <div
+                          key={position.tokenId.toString()}
+                          className="rounded-md border border-border bg-surface-2 p-4 space-y-3"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-semibold text-foreground">dETH/dUSDC</span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[11px] font-mono text-muted-foreground bg-surface-3 border border-border rounded px-2 py-0.5">
+                                {position.fee / 10000}%
+                              </span>
+                              <span className="text-[11px] font-mono text-success bg-success/8 border border-success/20 rounded px-2 py-0.5">
+                                Active
+                              </span>
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2 text-xs">
+                            <div>
+                              <span className="text-muted-foreground">Token ID</span>
+                              <p className="font-mono text-foreground mt-0.5">#{position.tokenId.toString()}</p>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">Range</span>
+                              <p className="font-mono text-foreground mt-0.5">
+                                {position.tickLower === MIN_TICK && position.tickUpper === MAX_TICK
+                                  ? 'Full Range'
+                                  : `${position.tickLower} – ${position.tickUpper}`}
+                              </p>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleClosePosition(position)}
+                            disabled={isClosing || isClosingPosition}
+                            className={cn(
+                              'w-full h-9 rounded-md text-sm font-medium border',
+                              'inline-flex items-center justify-center gap-1.5',
+                              'transition-all duration-150 cursor-pointer',
+                              !isClosing && !isClosingPosition
+                                ? 'border-destructive/30 bg-destructive/8 text-destructive hover:bg-destructive/15 active:scale-[0.98]'
+                                : 'border-border bg-surface-3 text-muted-foreground/40 cursor-not-allowed',
+                            )}
+                          >
+                            {isClosing ? (
+                              <><Loader2 className="h-3.5 w-3.5 animate-spin" strokeWidth={1.5} />Closing...</>
+                            ) : (
+                              <><X className="h-3.5 w-3.5" strokeWidth={1.5} />Close Position</>
+                            )}
+                          </button>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Pool info strip */}
+          <div className="mt-4 rounded-lg border border-border bg-surface-1 px-5 py-4 animate-fade-up stagger-2">
+            <h3 className="text-xs font-mono uppercase tracking-widest text-muted-foreground/60 mb-3">Pool Information</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+              {[
+                { label: 'Pool Address', value: POOL_ADDRESS, mono: true, truncate: true },
+                { label: 'Fee Tier', value: '0.3%', mono: false, truncate: false },
+                { label: 'Current Price', value: `1 dETH = ${currentPrice.toLocaleString(undefined, { maximumFractionDigits: 2 })} dUSDC`, mono: false, truncate: false },
+                { label: 'Network', value: 'Sepolia Testnet', mono: false, truncate: false },
+              ].map(item => (
+                <div key={item.label}>
+                  <span className="text-muted-foreground">{item.label}</span>
+                  <p className={cn('text-foreground mt-0.5', item.mono && 'font-mono', item.truncate && 'truncate')}>
+                    {item.value}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </PageLayout>

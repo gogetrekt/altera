@@ -5,7 +5,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { Loader2, Sparkles, Shield, Lock, Check, AlertCircle, ExternalLink } from "lucide-react"
 import { toast } from "sonner"
-import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt, useBalance } from "wagmi"
+import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt, useBalance, useSimulateContract, useConnect } from "wagmi"
 import { parseEther } from "viem"
 import { base } from "wagmi/chains"
 import { PageLayout } from "@/components/page-layout"
@@ -64,6 +64,24 @@ export default function GenesisPassPage() {
   const hasEnoughETH = ethBalance && ethBalance.value >= parseEther(GENESIS_NFT_CONFIG.totalPrice)
   const canMint = isConnected && isCorrectNetwork && !alreadyMinted && !isSoldOut && hasEnoughETH && mintState === "idle"
 
+  // Wagmi connect - used to trigger wallet connect without window.ethereum
+  const { connect, connectors } = useConnect()
+
+  // Pre-transaction simulation - only runs when all preconditions are met
+  const { data: simulateData, error: simulateError, isLoading: isSimulating } = useSimulateContract(
+    canMint && address
+      ? {
+          address: GENESIS_NFT_ADDRESS as `0x${string}`,
+          abi: GENESIS_NFT_ABI,
+          functionName: 'mint',
+          args: [1n],
+          value: parseEther(GENESIS_NFT_CONFIG.totalPrice),
+          chainId: base.id,
+          account: address,
+        }
+      : undefined
+  )
+
   // Mint transaction
   const { writeContract, data: mintTxHash, isPending: isMintPending, reset: resetMint, error: mintError } = useWriteContract()
 
@@ -120,21 +138,12 @@ export default function GenesisPassPage() {
     console.error("Mint error:", error)
   }
 
-  // Handle mint
+  // Handle mint - only fires when simulation has already succeeded
   const handleMint = async () => {
-    if (!canMint || !address) return
+    if (!canMint || !address || !simulateData?.request) return
 
     try {
-      writeContract({
-        address: GENESIS_NFT_ADDRESS as `0x${string}`,
-        abi: GENESIS_NFT_ABI,
-        functionName: 'mint',
-        args: [1n], // Mint 1 NFT
-        value: parseEther(GENESIS_NFT_CONFIG.totalPrice), // 0.00101 ETH (price + protocol fee)
-        chain: base,
-        account: address,
-      })
-
+      writeContract(simulateData.request)
       toast.loading("Transaction submitted", {
         description: "Waiting for confirmation...",
         id: "mint-tx",
@@ -198,14 +207,26 @@ export default function GenesisPassPage() {
         </>
       )
     }
+    if (isSimulating) {
+      return (
+        <>
+          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+          Checking...
+        </>
+      )
+    }
+    if (simulateError && !simulateData) {
+      return "Mint Unavailable"
+    }
     return "Mint Genesis Pass"
   }
 
   // Handle button click
   const handleButtonClick = () => {
     if (!isConnected) {
-      // Trigger wallet connect (handled by navbar)
-      window.ethereum?.request({ method: 'eth_requestAccounts' })
+      // Use wagmi connector - prefer injected, fall back to first available
+      const injected = connectors.find(c => c.id === 'injected') ?? connectors[0]
+      if (injected) connect({ connector: injected })
       return
     }
     if (canMint) {
@@ -213,11 +234,18 @@ export default function GenesisPassPage() {
     }
   }
 
-  const isButtonDisabled = 
-    (isConnected && !canMint) || 
-    mintState === "minting" || 
-    mintState === "confirming" || 
-    mintState === "minted"
+  // Disable the button when:
+  // - wallet is connected but preconditions for minting are not met, OR
+  // - a transaction is in flight, OR
+  // - simulation is still running (prevents firing before we know it will succeed), OR
+  // - simulation returned an error (contract would revert)
+  const isButtonDisabled =
+    (isConnected && !canMint) ||
+    mintState === "minting" ||
+    mintState === "confirming" ||
+    mintState === "minted" ||
+    (canMint && isSimulating) ||
+    (canMint && !!simulateError && !simulateData)
 
   return (
     <PageLayout minimalFooter>
@@ -377,13 +405,17 @@ export default function GenesisPassPage() {
                     </p>
                   )}
 
-                  {mintState === "idle" && isConnected && isCorrectNetwork && canMint && (
+                  {mintState === "idle" && isConnected && isCorrectNetwork && canMint && !simulateError && (
                     <p className="text-center text-xs text-muted-foreground">
                       By minting, you agree to hold a non-transferable Genesis Pass
                     </p>
                   )}
 
-                  {/* Debug: remove any stray renders */}
+                  {canMint && simulateError && !simulateData && (
+                    <p className="text-center text-sm text-red-500">
+                      Mint simulation failed. The transaction would revert on-chain.
+                    </p>
+                  )}
                 </CardContent>
               </Card>
             </div>

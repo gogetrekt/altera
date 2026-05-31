@@ -17,7 +17,7 @@ import {
   FAUCET_ABI,
 } from "@/lib/uniswap-config"
 
-const COOLDOWN_PERIOD = 24 * 60 * 60
+const FALLBACK_COOLDOWN = 24 * 60 * 60 // 86400s - used only when contract data is unavailable
 const SEPOLIA_CHAIN_ID = 11155111
 
 interface TokenFaucet {
@@ -63,6 +63,24 @@ export default function FaucetPage() {
     query: { enabled: !!address },
   })
 
+  // Read cooldown from each faucet contract; fall back to FALLBACK_COOLDOWN if unavailable
+  const { data: dethCooldownRaw } = useReadContract({
+    address: DETH_FAUCET_ADDRESS as `0x${string}`,
+    abi: FAUCET_ABI,
+    functionName: 'cooldown',
+    chainId: SEPOLIA_CHAIN_ID,
+  })
+
+  const { data: dusdcCooldownRaw } = useReadContract({
+    address: DUSDC_FAUCET_ADDRESS as `0x${string}`,
+    abi: FAUCET_ABI,
+    functionName: 'cooldown',
+    chainId: SEPOLIA_CHAIN_ID,
+  })
+
+  const dethCooldownPeriod = dethCooldownRaw !== undefined ? Number(dethCooldownRaw) : FALLBACK_COOLDOWN
+  const dusdcCooldownPeriod = dusdcCooldownRaw !== undefined ? Number(dusdcCooldownRaw) : FALLBACK_COOLDOWN
+
   const { 
     writeContractAsync,
     isPending: isWritePending,
@@ -107,7 +125,8 @@ export default function FaucetPage() {
   const getCooldown = (symbol: string): number => {
     const lastClaim = symbol === "dETH" ? dethLastClaim : dusdcLastClaim
     if (!lastClaim) return 0
-    const remaining = (Number(lastClaim) + COOLDOWN_PERIOD) - now
+    const cooldownPeriod = symbol === "dETH" ? dethCooldownPeriod : dusdcCooldownPeriod
+    const remaining = (Number(lastClaim) + cooldownPeriod) - now
     return remaining > 0 ? remaining : 0
   }
 
@@ -237,7 +256,7 @@ export default function FaucetPage() {
                   Test Tokens
                 </CardTitle>
                 <CardDescription>
-                  Claim test tokens to use on Altera testnet (once per 24 hours)
+                  Claim test tokens to use on Altera testnet (once per cooldown period)
                 </CardDescription>
               </CardHeader>
               <CardContent>

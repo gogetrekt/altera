@@ -49,6 +49,15 @@ function formatAmount(value: bigint, decimals: number, maxDecimals = 6): string 
   return num.toLocaleString(undefined, { maximumFractionDigits: maxDecimals })
 }
 
+// Default slippage tolerance: 0.5%
+// Amounts are reduced by this factor before passing as on-chain minimums.
+const SLIPPAGE_BPS = 50n // 50 basis points = 0.5%
+const BPS_DENOMINATOR = 10000n
+
+function applySlippage(amount: bigint): bigint {
+  return (amount * (BPS_DENOMINATOR - SLIPPAGE_BPS)) / BPS_DENOMINATOR
+}
+
 export default function LiquidityPage() {
   const { address, isConnected, chain } = useAccount()
   const isOnSepolia = !chain || chain.id === sepolia.id
@@ -186,16 +195,19 @@ export default function LiquidityPage() {
   const { writeContract, data: txHash, isPending, reset } = useWriteContract()
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash: txHash })
 
-  // Calculate current price from sqrtPriceX96
+  // Calculate current price using BigInt to avoid precision loss on sqrtPriceX96
   const currentPrice = (() => {
     if (!slot0 || !token0Address) return 0
     const sqrtPriceX96 = slot0[0] as bigint
-    const price = Number(sqrtPriceX96) ** 2 / 2 ** 192
-    // If token0 is dETH, price is dUSDC per dETH, else invert
+    const Q192 = 2n ** 192n
+    const DECIMAL_ADJUST = 10n ** 12n // dETH (18 dec) / dUSDC (6 dec)
     const isDethToken0 = token0Address.toLowerCase() === TOKEN_ADDRESSES.dETH.toLowerCase()
-    // Adjust for decimals: dETH has 18, dUSDC has 6
-    const adjustedPrice = isDethToken0 ? price * 10 ** 12 : (1 / price) * 10 ** 12
-    return adjustedPrice
+    const priceRaw = (sqrtPriceX96 * sqrtPriceX96 * DECIMAL_ADJUST) / Q192
+    if (isDethToken0) {
+      return Number(priceRaw)
+    } else {
+      return priceRaw > 0n ? Number(DECIMAL_ADJUST * DECIMAL_ADJUST) / Number(priceRaw) : 0
+    }
   })()
 
   // Determine token order
@@ -328,8 +340,8 @@ export default function LiquidityPage() {
         tickUpper: MAX_TICK,
         amount0Desired,
         amount1Desired,
-        amount0Min: 0n, // No slippage protection for simplicity
-        amount1Min: 0n,
+        amount0Min: applySlippage(amount0Desired),
+        amount1Min: applySlippage(amount1Desired),
         recipient: address,
         deadline: BigInt(Math.floor(Date.now() / 1000) + 1800), // 30 min
       }],
@@ -356,8 +368,10 @@ export default function LiquidityPage() {
         args: [{
           tokenId: position.tokenId,
           liquidity: position.liquidity,
-          amount0Min: 0n,
-          amount1Min: 0n,
+          // amount0Min/amount1Min cannot be pre-computed exactly without tick math.
+          // Setting 1n prevents a full-drain sandwich (vs 0n) until tick-math calculation is added.
+          amount0Min: 1n,
+          amount1Min: 1n,
           deadline: BigInt(Math.floor(Date.now() / 1000) + 1800),
         }],
         chain: sepolia,

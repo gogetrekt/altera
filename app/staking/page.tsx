@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react"
 import { Coins, Gift, Lock, Unlock, CheckCircle2, Circle, TriangleAlert } from "lucide-react"
 import { toast } from "sonner"
-import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt, useBalance, usePublicClient } from "wagmi"
+import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt, useBalance } from "wagmi"
 import { parseUnits, formatUnits } from "viem"
 import { sepolia } from "viem/chains"
 import { PageLayout } from "@/components/page-layout"
@@ -43,12 +43,10 @@ function formatAmount(value: bigint, decimals: number, maxDecimals = 6): string 
 export default function StakingPage() {
   const { address, isConnected, chain } = useAccount()
   const isOnSepolia = !chain || chain.id === sepolia.id
-  const publicClient = usePublicClient()
   const [activePool, setActivePool] = useState<PoolType>("dusdc")
   const [stakeAmount, setStakeAmount] = useState("")
   const [unstakeAmount, setUnstakeAmount] = useState("")
   const [pendingAction, setPendingAction] = useState<string | null>(null)
-  const [displayPendingReward, setDisplayPendingReward] = useState<bigint>(0n)
 
   const poolId = POOL_IDS[activePool]
   const stakedToken = activePool === "dusdc" ? TOKEN_ADDRESSES.dUSDC : TOKEN_ADDRESSES.dETH
@@ -59,14 +57,6 @@ export default function StakingPage() {
   const { data: tokenBalance, refetch: refetchBalance } = useBalance({
     address,
     token: stakedToken as `0x${string}`,
-    chainId: sepolia.id,
-    query: { enabled: !!address },
-  })
-
-  // CORE balance
-  const { data: coreBalance } = useBalance({
-    address,
-    token: TOKEN_ADDRESSES.CORE as `0x${string}`,
     chainId: sepolia.id,
     query: { enabled: !!address },
   })
@@ -129,14 +119,22 @@ export default function StakingPage() {
   const { writeContract, data: txHash, isPending, reset } = useWriteContract()
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash: txHash })
 
-  // Calculate current price
+  // Calculate current price using BigInt to avoid precision loss on sqrtPriceX96
   const currentPrice = (() => {
     if (!slot0 || !token0Address) return 0
     const sqrtPriceX96 = slot0[0] as bigint
-    const price = Number(sqrtPriceX96) ** 2 / 2 ** 192
+    // price = sqrtPriceX96^2 / 2^192, scaled to account for 18 vs 6 decimal mismatch
+    const Q192 = 2n ** 192n
+    const DECIMAL_ADJUST = 10n ** 12n // dETH (18 dec) / dUSDC (6 dec)
     const isDethToken0 = token0Address.toLowerCase() === TOKEN_ADDRESSES.dETH.toLowerCase()
-    const adjustedPrice = isDethToken0 ? price * 10 ** 12 : (1 / price) * 10 ** 12
-    return adjustedPrice
+    const priceRaw = (sqrtPriceX96 * sqrtPriceX96 * DECIMAL_ADJUST) / Q192
+    // priceRaw = dUSDC per dETH if dETH is token0, else invert
+    if (isDethToken0) {
+      return Number(priceRaw)
+    } else {
+      // invert: dUSDC per dETH = DECIMAL_ADJUST^2 / priceRaw (approximate using float at this point since it's display-only)
+      return priceRaw > 0n ? Number(DECIMAL_ADJUST * DECIMAL_ADJUST) / Number(priceRaw) : 0
+    }
   })()
 
   // Parse amounts
@@ -154,18 +152,6 @@ export default function StakingPage() {
     }
     return 0n
   })()
-  const rewardRate = (() => {
-    if (!poolInfo) return 0n
-    const poolData = poolInfo as any
-    if (Array.isArray(poolData) && poolData.length > 2) {
-      return poolData[2] as bigint
-    }
-    if (poolData.rewardRate !== undefined) {
-      return poolData.rewardRate as bigint
-    }
-    return 0n
-  })()
-
   // Calculate APY
   const calculateAPY = () => {
     if (totalStaked === 0n) return "0%"
@@ -198,22 +184,10 @@ export default function StakingPage() {
     return `${apy.toFixed(2)}%`
   }
 
-  // Update pending reward display - only if contract has rewards, otherwise keep simulation
-  useEffect(() => {
-    if (pendingReward !== undefined && pendingReward !== null) {
-      const contractReward = pendingReward as bigint
-      // Only sync from contract if contract has meaningful rewards
-      // Otherwise let the simulation run
-      if (contractReward > 0n) {
-        setDisplayPendingReward(contractReward)
-      }
-    }
-  }, [pendingReward])
-
   // Auto-refresh data from contract every 10 seconds
   useEffect(() => {
     if (!isConnected) return
-    
+
     const interval = setInterval(() => {
       refetchPendingReward()
       refetchUserInfo()
@@ -225,34 +199,10 @@ export default function StakingPage() {
     return () => clearInterval(interval)
   }, [isConnected, refetchPendingReward, refetchUserInfo, refetchPoolInfo, refetchBalance, refetchAllowance])
 
-  // Simulate reward accumulation - this runs independently
-  useEffect(() => {
-    // Only simulate if user has staked something
-    if (userStaked === 0n) {
-      return
-    }
-
-    // Base reward rate: 0.000001 CORE per second per 1 USD staked
-    const interval = setInterval(() => {
-      setDisplayPendingReward(prev => {
-        // Calculate user's reward per second based on their stake
-        const userStakedNum = Number(formatUnits(userStaked, stakedTokenDecimals))
-        
-        // For dETH pool, rewards are higher since ETH is more valuable
-        const multiplier = activePool === "deth" ? (currentPrice || 2900) : 1
-        
-        // Reward increment per second: 0.000001 CORE per USD value staked
-        // In wei (18 decimals): 0.000001 * 1e18 = 1e12
-        const baseRewardPerUnit = 1000000000000n // 0.000001 CORE in wei
-        const rewardIncrement = BigInt(Math.floor(userStakedNum * multiplier)) * baseRewardPerUnit
-        
-        const newReward = prev + rewardIncrement
-        return newReward
-      })
-    }, 1000)
-
-    return () => clearInterval(interval)
-  }, [userStaked, stakedTokenDecimals, activePool, currentPrice])
+  // Use on-chain pending reward directly - no simulated accumulation
+  const onChainPendingReward: bigint = pendingReward !== undefined && pendingReward !== null
+    ? (pendingReward as bigint)
+    : 0n
 
   // Handle success
   useEffect(() => {
@@ -269,7 +219,6 @@ export default function StakingPage() {
         setUnstakeAmount("")
       } else if (pendingAction === "claim") {
         toast.success("Rewards claimed successfully!")
-        setDisplayPendingReward(0n)
       }
       
       // Refetch all data
@@ -288,7 +237,6 @@ export default function StakingPage() {
     setStakeAmount("")
     setUnstakeAmount("")
     setPendingAction(null)
-    setDisplayPendingReward(0n)
   }, [activePool])
 
   // Reset state when wallet/address changes
@@ -296,7 +244,6 @@ export default function StakingPage() {
     setStakeAmount("")
     setUnstakeAmount("")
     setPendingAction(null)
-    setDisplayPendingReward(0n)
     reset()
   }, [address, reset])
 
@@ -349,7 +296,7 @@ export default function StakingPage() {
   }
 
   const handleClaim = () => {
-    if (!address || displayPendingReward === 0n) return
+    if (!address || onChainPendingReward === 0n) return
     setPendingAction("claim")
     writeContract({
       address: CORE_STAKING_ADDRESS as `0x${string}`,
@@ -444,14 +391,14 @@ export default function StakingPage() {
                     <CardContent className="space-y-4">
                       <div className="rounded-lg bg-secondary/30 p-4 text-center">
                         <p className="text-3xl font-bold text-primary">
-                          {Number(formatUnits(displayPendingReward, 18)).toFixed(8)}
+                          {Number(formatUnits(onChainPendingReward, 18)).toFixed(8)}
                         </p>
                         <p className="text-sm text-muted-foreground">CORE</p>
                       </div>
                       <Button
                         className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
                         onClick={handleClaim}
-                        disabled={displayPendingReward === 0n || isLoading || !isConnected}
+                        disabled={onChainPendingReward === 0n || isLoading || !isConnected}
                       >
                         {isLoading && pendingAction === "claim" ? "Claiming..." : "Claim Rewards"}
                       </Button>

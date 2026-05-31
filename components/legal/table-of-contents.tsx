@@ -3,12 +3,6 @@
 import { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
 import { ChevronDown, List } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible"
 
 export interface TOCItem {
   id: string
@@ -28,113 +22,77 @@ export function TableOfContents({ items, className }: TableOfContentsProps) {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setActiveSection(entry.target.id)
-          }
+          if (entry.isIntersecting) setActiveSection(entry.target.id)
         })
       },
-      {
-        rootMargin: "-20% 0px -70% 0px",
-        threshold: 0,
-      }
+      { rootMargin: "-20% 0px -70% 0px", threshold: 0 }
     )
-
     items.forEach((item) => {
-      const element = document.getElementById(item.id)
-      if (element) {
-        observer.observe(element)
-      }
+      const el = document.getElementById(item.id)
+      if (el) observer.observe(el)
     })
-
     return () => observer.disconnect()
   }, [items])
 
   const handleClick = (id: string) => {
-    const element = document.getElementById(id)
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" })
-      setIsOpen(false)
-    }
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" })
+    setIsOpen(false)
   }
+
+  const NavList = () => (
+    <ul className="space-y-0.5">
+      {items.map((item, index) => (
+        <li key={item.id}>
+          <button
+            onClick={() => handleClick(item.id)}
+            className={cn(
+              "w-full text-left text-sm py-1.5 px-3 rounded-md transition-colors duration-150 cursor-pointer",
+              "hover:bg-surface-3 hover:text-foreground",
+              activeSection === item.id
+                ? "bg-primary/8 text-primary font-medium"
+                : "text-muted-foreground"
+            )}
+          >
+            <span className="mr-2 text-xs opacity-40 font-mono">{index + 1}.</span>
+            {item.title}
+          </button>
+        </li>
+      ))}
+    </ul>
+  )
 
   return (
     <>
-      {/* Desktop TOC - Sticky Sidebar */}
-      <nav className={cn(
-        "hidden lg:block sticky top-24 h-fit",
-        className
-      )}>
-        <div className="border border-border rounded-lg bg-card p-4">
-          <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-            <List className="h-4 w-4" />
-            Table of Contents
+      {/* Desktop TOC — sticky sidebar */}
+      <nav className={cn("hidden lg:block sticky top-24 h-fit", className)}>
+        <div className="rounded-lg border border-border bg-surface-1 p-4">
+          <h3 className="text-xs font-mono uppercase tracking-wide text-muted-foreground/60 mb-3 flex items-center gap-2">
+            <List className="h-3.5 w-3.5" strokeWidth={1.5} />
+            Contents
           </h3>
-          <div className="max-h-[calc(100vh-16rem)] overflow-y-auto pr-1 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-border hover:scrollbar-thumb-muted-foreground/50 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-border [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb:hover]:bg-muted-foreground/50">
-            <ul className="space-y-1">
-              {items.map((item, index) => (
-                <li key={item.id}>
-                  <button
-                    onClick={() => handleClick(item.id)}
-                    className={cn(
-                      "w-full text-left text-sm py-1.5 px-3 rounded-md transition-colors",
-                      "hover:bg-secondary hover:text-foreground",
-                      activeSection === item.id
-                        ? "bg-primary/10 text-primary font-medium"
-                        : "text-muted-foreground"
-                    )}
-                  >
-                    <span className="mr-2 text-xs opacity-50">{index + 1}.</span>
-                    {item.title}
-                  </button>
-                </li>
-              ))}
-            </ul>
+          <div className="max-h-[calc(100svh-14rem)] overflow-y-auto pr-1 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-border [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb:hover]:bg-border-strong">
+            <NavList />
           </div>
         </div>
       </nav>
 
-      {/* Mobile TOC - Collapsible */}
+      {/* Mobile TOC — native disclosure */}
       <div className="lg:hidden mb-6">
-        <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-          <CollapsibleTrigger asChild>
-            <Button
-              variant="outline"
-              className="w-full justify-between"
-            >
-              <span className="flex items-center gap-2">
-                <List className="h-4 w-4" />
-                Table of Contents
-              </span>
-              <ChevronDown className={cn(
-                "h-4 w-4 transition-transform",
-                isOpen && "rotate-180"
-              )} />
-            </Button>
-          </CollapsibleTrigger>
-          <CollapsibleContent className="mt-2">
-            <div className="border border-border rounded-lg bg-card p-4">
-              <ul className="space-y-1">
-                {items.map((item, index) => (
-                  <li key={item.id}>
-                    <button
-                      onClick={() => handleClick(item.id)}
-                      className={cn(
-                        "w-full text-left text-sm py-2 px-3 rounded-md transition-colors",
-                        "hover:bg-secondary hover:text-foreground",
-                        activeSection === item.id
-                          ? "bg-primary/10 text-primary font-medium"
-                          : "text-muted-foreground"
-                      )}
-                    >
-                      <span className="mr-2 text-xs opacity-50">{index + 1}.</span>
-                      {item.title}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </CollapsibleContent>
-        </Collapsible>
+        <button
+          onClick={() => setIsOpen(v => !v)}
+          className="w-full flex items-center justify-between h-10 px-4 rounded-md border border-border bg-surface-1 text-sm text-muted-foreground hover:bg-surface-2 hover:text-foreground transition-colors duration-150 cursor-pointer"
+        >
+          <span className="flex items-center gap-2">
+            <List className="h-4 w-4" strokeWidth={1.5} />
+            Table of Contents
+          </span>
+          <ChevronDown className={cn("h-4 w-4 transition-transform duration-200", isOpen && "rotate-180")} strokeWidth={1.5} />
+        </button>
+        {isOpen && (
+          <div className="mt-2 rounded-lg border border-border bg-surface-1 p-3">
+            <NavList />
+          </div>
+        )}
       </div>
     </>
   )

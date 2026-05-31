@@ -2,51 +2,51 @@
 
 import { ExternalLink } from "lucide-react"
 import { PageLayout } from "@/components/page-layout"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Alert, AlertDescription } from "@/components/ui/alert"
+import { SectionHeader } from "@/components/ui/section-header"
+
+function TroubleshootCard({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="rounded-lg border border-border bg-surface-1">
+      <div className="px-5 py-4 border-b border-border">
+        <p className="text-sm font-semibold text-foreground">{title}</p>
+      </div>
+      <div className="px-5 py-4 space-y-4 text-sm text-muted-foreground">
+        {children}
+      </div>
+    </div>
+  )
+}
 
 export default function FaucetTroubleshootPage() {
   return (
     <PageLayout minimalFooter>
-      <div className="py-12 px-4">
-        <div className="mx-auto max-w-2xl space-y-6">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-foreground">Faucet Troubleshooting</h1>
-            <p className="text-muted-foreground mt-1">Having issues claiming tokens?</p>
+      <div className="py-12 px-4 sm:px-6">
+        <div className="mx-auto max-w-2xl space-y-5">
+
+          <div className="mb-8 animate-fade-up">
+            <SectionHeader title="Faucet Troubleshooting" as="h1" />
+            <p className="text-sm text-muted-foreground mt-1">Having issues claiming tokens?</p>
           </div>
 
-          {/* MetaMask Simulation Issue */}
-          <Card className="bg-card border-border">
-            <CardHeader>
-              <CardTitle>MetaMask Shows "Review alert" But Can't Confirm</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                MetaMask's simulation feature sometimes fails with testnet RPCs. Here's how to fix it:
-              </p>
-              <ol className="text-sm space-y-2 list-decimal list-inside text-muted-foreground">
+          <div className="space-y-4 animate-fade-up stagger-1">
+
+            <TroubleshootCard title="MetaMask Shows &quot;Review alert&quot; But Can&apos;t Confirm">
+              <p>MetaMask&apos;s simulation feature sometimes fails with testnet RPCs. Here&apos;s how to fix it:</p>
+              <ol className="space-y-2 list-decimal list-inside">
                 <li>Open MetaMask</li>
-                <li>Go to <strong>Settings</strong> → <strong>Experimental</strong></li>
-                <li>Find <strong>Smart Transaction Controller</strong> or <strong>Transaction simulations</strong></li>
-                <li>Toggle it <strong>OFF</strong></li>
+                <li>Go to <strong className="text-foreground">Settings</strong> → <strong className="text-foreground">Experimental</strong></li>
+                <li>Find <strong className="text-foreground">Smart Transaction Controller</strong> or <strong className="text-foreground">Transaction simulations</strong></li>
+                <li>Toggle it <strong className="text-foreground">OFF</strong></li>
                 <li>Refresh the page and try claiming again</li>
               </ol>
-            </CardContent>
-          </Card>
+            </TroubleshootCard>
 
-          {/* RPC Configuration */}
-          <Card className="bg-card border-border">
-            <CardHeader>
-              <CardTitle>Change MetaMask RPC Endpoint</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                If you're still having issues, try switching to a more stable RPC:
-              </p>
-              <ol className="text-sm space-y-2 list-decimal list-inside text-muted-foreground">
+            <TroubleshootCard title="Change MetaMask RPC Endpoint">
+              <p>If you&apos;re still having issues, try switching to a more stable RPC:</p>
+              <ol className="space-y-2 list-decimal list-inside">
                 <li>In MetaMask, click the network dropdown (top of extension)</li>
-                <li>Select <strong>Sepolia</strong></li>
-                <li>Click <strong>Add Custom RPC</strong> or edit the existing Sepolia network</li>
+                <li>Select <strong className="text-foreground">Sepolia</strong></li>
+                <li>Click <strong className="text-foreground">Add Custom RPC</strong> or edit the existing Sepolia network</li>
                 <li>Set the RPC URL to one of these:
                   <ul className="list-disc list-inside ml-4 mt-2 space-y-1 font-mono text-xs">
                     <li>https://eth-sepolia.g.alchemy.com/v2/demo</li>
@@ -56,73 +56,48 @@ export default function FaucetTroubleshootPage() {
                 </li>
                 <li>Save and try claiming again</li>
               </ol>
-            </CardContent>
-          </Card>
+            </TroubleshootCard>
 
-          {/* Cooldown Check */}
-          <Card className="bg-card border-border">
-            <CardHeader>
-              <CardTitle>Check Your Claim Cooldown</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                You can only claim once every 24 hours per token. The faucet shows the remaining cooldown time below each token.
-              </p>
-              <Alert className="bg-secondary/30 border-border">
-                <AlertDescription className="text-sm">
-                  If the cooldown doesn't update, try refreshing the page (press F5 or Ctrl+Shift+R).
-                </AlertDescription>
-              </Alert>
-            </CardContent>
-          </Card>
+            <TroubleshootCard title="Check Your Claim Cooldown">
+              <p>You can only claim once every 24 hours per token. The faucet shows the remaining cooldown time below each token.</p>
+              <div className="rounded-md border border-border bg-surface-2 px-4 py-3 text-sm text-muted-foreground">
+                If the cooldown doesn&apos;t update, try refreshing the page (press F5 or Ctrl+Shift+R).
+              </div>
+            </TroubleshootCard>
 
-          {/* Insufficient Balance */}
-          <Card className="bg-card border-border">
-            <CardHeader>
-              <CardTitle>Need Sepolia ETH for Gas?</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                You need a small amount of Sepolia ETH to pay for transaction fees. Get some from these faucets:
-              </p>
+            <TroubleshootCard title="Need Sepolia ETH for Gas?">
+              <p>You need a small amount of Sepolia ETH to pay for transaction fees. Get some from these faucets:</p>
               <div className="space-y-2">
                 <a
                   href="https://cloud.google.com/application/web3/faucet/ethereum/sepolia"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-sm text-primary hover:underline"
+                  className="flex items-center gap-2 text-primary hover:text-primary/80 transition-colors duration-150"
                 >
-                  Google Cloud Faucet <ExternalLink className="h-3 w-3" />
+                  Google Cloud Faucet <ExternalLink className="h-3.5 w-3.5" strokeWidth={1.5} />
                 </a>
                 <a
                   href="https://www.alchemy.com/faucets/ethereum-sepolia"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-sm text-primary hover:underline"
+                  className="flex items-center gap-2 text-primary hover:text-primary/80 transition-colors duration-150"
                 >
-                  Alchemy Faucet <ExternalLink className="h-3 w-3" />
+                  Alchemy Faucet <ExternalLink className="h-3.5 w-3.5" strokeWidth={1.5} />
                 </a>
               </div>
-            </CardContent>
-          </Card>
+            </TroubleshootCard>
 
-          {/* Still Not Working */}
-          <Card className="bg-card border-red-500/20">
-            <CardHeader>
-              <CardTitle>Still Having Issues?</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                If none of the above solutions work, try:
-              </p>
-              <ul className="text-sm list-disc list-inside space-y-1 text-muted-foreground mt-3">
+            <TroubleshootCard title="Still Having Issues?">
+              <p>If none of the above solutions work, try:</p>
+              <ul className="list-disc list-inside space-y-1.5">
                 <li>Clear your browser cache and cookies (Ctrl+Shift+Delete)</li>
                 <li>Use a different browser</li>
-                <li>Make sure you're on the Sepolia testnet</li>
+                <li>Make sure you&apos;re on the Sepolia testnet</li>
                 <li>Check that your wallet has at least 0.001 Sepolia ETH</li>
               </ul>
-            </CardContent>
-          </Card>
+            </TroubleshootCard>
+
+          </div>
         </div>
       </div>
     </PageLayout>

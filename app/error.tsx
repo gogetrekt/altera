@@ -1,8 +1,6 @@
 "use client"
 
 import { useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 export default function GlobalError({
   error,
@@ -16,28 +14,28 @@ export default function GlobalError({
   }, [error])
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4 bg-background">
-      <Card className="w-full max-w-md bg-card border-border">
-        <CardHeader>
-          <CardTitle className="text-foreground">Something went wrong</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
+    <div className="flex min-h-dvh items-center justify-center px-4 bg-background">
+      <div className="w-full max-w-md rounded-lg border border-border bg-surface-1">
+        <div className="px-6 py-5 border-b border-border">
+          <p className="text-base font-semibold text-foreground">Something went wrong</p>
+        </div>
+        <div className="px-6 py-5 space-y-4">
           <p className="text-sm text-muted-foreground">
             An unexpected error occurred. If this page involves a wallet connection, make sure your wallet is connected to the correct network.
           </p>
           {error.digest && (
-            <p className="text-xs text-muted-foreground font-mono">
+            <p className="text-xs text-muted-foreground font-mono bg-surface-2 border border-border rounded px-3 py-2">
               Error ID: {error.digest}
             </p>
           )}
-          <Button
-            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+          <button
+            className="w-full h-10 rounded-md bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-medium transition-colors duration-150 cursor-pointer active:scale-[0.98]"
             onClick={reset}
           >
             Try again
-          </Button>
-        </CardContent>
-      </Card>
+          </button>
+        </div>
+      </div>
     </div>
   )
 }
